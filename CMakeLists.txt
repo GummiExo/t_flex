@@ -65,18 +65,17 @@ include_directories(
 )
 
 # Build main ROS node for gait phase detection based on thresholds
-add_executable(threshold_gait_detection_node src/nodes/threshold_gait_detection_node.cpp)
-target_link_libraries(threshold_gait_detection_node
-  ${catkin_LIBRARIES}
-  feature_extractor
-  gait_cycle_classifier
-)
+#add_executable(threshold_gait_detection_node src/nodes/threshold_gait_detection_node.cpp)
+#target_link_libraries(threshold_gait_detection_node
+#  ${catkin_LIBRARIES}
+#  feature_extractor
+#  gait_cycle_classifier
+#)
 
 # Build main ROS node for start dynamixel controllers
 add_executable(position_control src/nodes/position_control.cpp)
 target_link_libraries(position_control
   ${catkin_LIBRARIES}
-  
 )
 
 #############
@@ -84,11 +83,7 @@ target_link_libraries(position_control
 #############
 
 ## Mark executables and/or libraries for installation
-install(TARGETS threshold_gait_detection_node
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+#install(TARGETS threshold_gait_detection_node
 install(TARGETS position_control
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

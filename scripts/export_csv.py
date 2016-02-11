@@ -43,7 +43,7 @@ class IMU_FSR_Data_Exporter(object):
             print("Time: {} seconds".format(self.time_stamp/1000.0))
 
     def callback_fsr(self, msg):
-        # Reading and logging imu_data
+        # Reading and logging fsr_data
         if self.writing:
             self.bag_fsr.write('/fsr_data',msg)
 
