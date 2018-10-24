@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, length=device-length, initial-scale=1">
+		<style>
+			body {
+				background-image: url("/src/media/assistance_screen.png");
+				background-repeat: no-repeat;
+				background-size: cover, cover;
+				background-position: fixed;
+			}
+			.header {
+		    padding: 0% 0% 97% 0%;
+			}
+			.time_box{
+				padding: 0% 0% 15% 75%;
+			}
+			.buttons_box{
+				padding: 0% 0% 0% 0%;
+			}
+			.menu {
+			    padding: 42% 0% 0% 0%;
+			}
+			input[type=number] {
+				padding: 5% 2% 10% 5%;
+				min: 0;
+				width: 50%;
+
+			}
+			.column{
+				padding:0% 0% 0% 0%;
+				float: left;
+			}
+			.button{
+				background-color: Transparent;
+				border: none;
+				overflow: hidden;
+				outline: none;
+			}
+			.btn {
+	  		width: 33%;
+			}
+			.image{
+				width: 80%;
+				height: 80%;
+			}
+			.button_menu {
+				background-color: red;
+				border: none;
+				color: white;
+				text-align: center;
+				font-size: 1.6em;
+				border-radius: 12px;
+				outline: none;
+				padding: 5% 10%;
+				width: 65%;
+			}
+			.button_menu:hover {
+			    background-color: #FA8072;
+			}
+
+		</style>
+	</head>
+	<body src ="{{ static_url("media/assistance_screen.png")}}">
+		<div class="header"></div>
+		<div class="time_box">
+			<input type="number" name="time" step="1" value="20" id="time_assistance" />
+		</div>
+		<div class="buttons_box">
+			<div class="row">
+				<div class="column btn">
+					<button class="button" id="start_assistance"><img class="image" src ="{{ static_url("media/start.png")}}"></button>
+				</div>
+				<div class="column btn">
+					<button class="button" onclick="alert('1.Ingrese el tiempo en segundos de asistencia del dispositivo\n2.Oprima Iniciar (Bot\u00f3n Verde)')"><img class="image" src ="{{ static_url("media/info.png")}}"></button>
+				</div>
+				<div class="column btn">
+					<button class="button" id="stop_assistance"><img class="image" src ="{{ static_url("media/stop.png")}}"></button>
+				</div>
+		</div>
+		<div class="menu"><a href="/">
+			<center> <button class="button_menu">Men&uacute;</button></center>
+		</a></div>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script src="{{ static_url("ws-client.js")}}"></script>
+	</body>
+</html>

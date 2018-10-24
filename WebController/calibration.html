@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, length=device-length, initial-scale=1">
+		<style>
+			body {
+				background-image: url("/src/media/calibration_screen.png");
+				background-repeat: no-repeat;
+				background-size: cover, cover;
+				background-position: fixed;
+			}
+			.header {
+				width: 30%;
+		    padding: 31%;
+			}
+			.menu {
+				padding: 55% 0% 0% 0%;
+			}
+			.col_images {
+				padding: 0% 0% 0% 4%;
+			}
+			.column {
+				padding:6% 0% 10% 0%;
+				float: left;
+			}
+			.option {
+	  		width: 33%;
+			}
+			.menu_btn {
+			  padding: 0% 0% 0% 0%;
+			}
+			.selector{
+				padding: 2% 10%;
+				text-align: left;
+			}
+			.image{
+				width: 80%;
+				height: 80%;
+			}
+			.button{
+				background-color: Transparent;
+				border: none;
+				overflow: hidden;
+				outline: none;
+			}
+			.button_menu {
+				background-color: red;
+				border: none;
+				color: white;
+				text-align: center;
+				font-size: 1.6em;
+				border-radius: 12px;
+				outline: none;
+				padding: 5% 10%;
+				width: 55%;
+		    
+			}
+			.button_menu:hover {
+			    background-color: #FA8072;
+			}
+
+		</style>
+	</head>
+	<body src ="{{ static_url("media/menu_screen.png")}}">
+		<div class="header"></div>
+		<div class="menu">
+			<center><select class="selector" id="selector">
+				<option value="angle_cal">Flexo-Extensi&oacute;n</option>
+				<option value="stiffness_cal">Rigidez</option>
+				<option value="state">Estado</option>
+			</center></select>
+		</div>
+		<div class="col_images">
+			<div class="row">
+				<div class="column option">
+					<button class="button" id="start_calibration"><img class="image" src="{{ static_url("media/start.png")}}"></button>
+				</div>
+				<div class="column option">
+					<button class="button" id="info_button_cal"><img class="image" src="{{ static_url("media/info.png")}}"></button>
+				</div>
+				<div class="column option">
+					<button class="button" id="stop_calibration"><img class="image" src="{{ static_url("media/stop.png")}}"></button>
+				</div>
+			</div>
+		</div>
+		<div class="menu_btn"><a href="/">
+			<center> <button class="button_menu" id="menu">Men&uacute;</button></center>
+		</a></div>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script src="{{ static_url("ws-client.js")}}"></script>
+
+	</body>
+</html>

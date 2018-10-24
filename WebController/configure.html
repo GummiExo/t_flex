@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, length=device-length, initial-scale=1">
+		<style>
+			body {
+				background-image: url("/src/media/configure_screen.png");
+				background-repeat: no-repeat;
+				background-size: cover, cover;
+				background-position: fixed;
+			}
+			.header {
+		    padding: 0% 0% 95% 0%;
+			}
+			.update{
+				padding: 0% 0% 28% 0%
+			}
+			.ssh{
+				padding: 0% 0% 0% 0%
+			}
+			.menu {
+			    padding: 10% 0% 0% 0%;
+			}
+			.option {
+				width: 50%
+			}
+			.buttons {
+		    background-color: #3969DA;
+		    border: none;
+		    color: white;
+		    text-align: center;
+				border-radius: 12px;
+				outline: none
+			}
+			.buttons:hover {
+		    background-color: blue;
+			}
+			.button_update {
+				padding: 5% 20%;
+				font-size: 1.3em;
+			}
+			.button_ssh {
+				padding: 5% 5%;
+				font-size: 1em;
+			}
+			.button_menu {
+				background-color: red;
+				border: none;
+				color: white;
+				text-align: center;
+				font-size: 1.6em;
+				border-radius: 12px;
+				outline: none;
+				padding: 5% 10%;
+				width: 65%;
+			}
+			.button_menu:hover {
+			    background-color: #FA8072;
+			}
+
+		</style>
+
+	</head>
+	<body src ="{{ static_url("media/configure_screen.png")}}">
+		<div class="header"></div>
+		<div class="update">
+			<center> <button class="buttons button_update">Actualizar</button> </center>
+		</div>
+		<div class="ssh">
+			<div class="row">
+				<center>
+				<div class="options">
+					<a href="http://192.168.4.1:3013"><button class="buttons button_ssh" id="open_terminal">Abrir Terminal</button></a>
+					<button class="buttons button_ssh" id="close_terminal">Cerrar Conexion</button>
+				</div>
+			</center>
+			</div>
+		</div>
+		<div class="menu"><a href="/">
+			<center> <button class="button_menu">Men&uacute;</button></center>
+		</a></div>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script src="{{ static_url("ws-client.js")}}"></script>
+	</body>
+</html>

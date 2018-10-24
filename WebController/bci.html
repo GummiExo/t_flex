@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, length=device-length, initial-scale=1">
+		<style>
+			body {
+				background-image: url("/src/media/bci_screen.png");
+				background-repeat: no-repeat;
+				background-size: cover, cover;
+				background-position: fixed;
+			}
+			.header {
+		    padding: 60% 0% 8% 5%;
+
+			}
+			.buttons_box{
+				padding: 0% 0% 18% 30%;
+			}
+			.vel_box{
+				padding: 0% 0% 2% 50%;
+			}
+			.update_vel{
+				padding: 0% 0% 0% 0%;
+			}
+			.middle{
+				padding: 0% 0% 5% 0%;
+			}
+			.menu {
+			    padding: 5% 0% 0% 0%;
+			}
+			.act_button {
+				background-color: yellow;
+				border: none;
+				padding: 4% 4%;
+				outline: none;
+				border-radius: 12px;
+			}
+			.act_button:hover {
+				background-color: blue;
+			}
+			.column{
+				padding:0% 0% 0% 0%;
+				float: left;
+			}
+			.btn {
+	  		width: 50%;
+			}
+			.button{
+				background-color: Transparent;
+				border: none;
+				overflow: hidden;
+				outline: none;
+			}
+			.image{
+				width: 50%;
+				height: 50%;
+			}
+			.slider {
+					-webkit-appearance: none;
+			    appearance: none;
+			    width: 80%;
+			    height: 5%;
+			    background: white;
+			    outline: none;
+					opacity: 1;
+			    -webkit-transition: .2s;
+			    transition: opacity .2s;
+					padding: 0%;
+			}
+			.slider:hover {
+			    opacity: 1;
+			}
+			.update_button {
+		    background-color: #3969DA;
+		    border: none;
+		    color: white;
+		    text-align: center;
+		    font-size: 0.8em;
+				border-radius: 12px;
+				outline: none;
+				padding: 2% 2%;
+			}
+			.update_button:hover {
+		    background-color: blue;
+			}
+			.button_menu {
+				background-color: red;
+				border: none;
+				color: white;
+				text-align: center;
+				font-size: 1.6em;
+				border-radius: 12px;
+				outline: none;
+				padding: 5% 10%;
+				width: 65%;
+			}
+			.button_menu:hover {
+			    background-color: #FA8072;
+			}
+
+		</style>
+
+	</head>
+	<body src ="{{ static_url("media/bci_screen.png")}}">
+		<div class="header">
+			<div align="left"><button class="act_button" id="open_port">Abrir Puerto</button></div>
+		</div>
+		<div class="buttons_box">
+			<div class="row">
+				<div class="column btn">
+					<button class="button" id="start_therapy_bci"><img class="image" src="{{ static_url("media/start.png")}}"></button>
+				</div>
+				<div class="column btn">
+					<button class="button" id="stop_therapy_bci"><img class="image" src="{{ static_url("media/stop.png")}}"></button>
+				</div>
+			</div>
+		</div>
+		<div class="vel_box">
+			<div class="slider">
+				<input type="range" name="vel" min="1" max="15" value="5" id="velocity">
+			</div>
+		</div>
+		<div class="update_vel">
+			<center> <button class="update_button" id="update_vel">Actualizar Velocidad</button> </center>
+		</div>
+		<div class="middle"></div>
+		<div class="buttons_box">
+			<div class="row">
+				<div class="column btn">
+					<button class="button" id="start_assistance_bci"><img class="image" src="{{ static_url("media/start.png")}}"></button>
+				</div>
+				<div class="column btn">
+					<button class="button" id="stop_assistance_bci"><img class="image" src="{{ static_url("media/stop.png")}}"></button>
+				</div>
+			</div>
+		</div>
+		<div class="vel_box">
+			<div class="slider">
+				<input type="range" name="vel" min="1" max="15" value="5" id="velocity">
+			</div>
+		</div>
+		<div class="update_vel">
+			<center> <button class="update_button" id="update_vel">Actualizar Velocidad</button> </center>
+		</div>
+		<div class="menu"><a href="/">
+			<center> <button class="button_menu">Men&uacute;</button></center>
+		</a></div>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script src="{{ static_url("ws-client.js")}}"></script>
+	</body>
+</html>

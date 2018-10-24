@@ -1,0 +1,24 @@
+tilt1_controller:
+    controller:
+        package: dynamixel_controllers
+        module: joint_position_controller
+        type: JointPositionController
+    joint_name: tilt1_joint
+    joint_speed: 2.0
+    motor:
+        id: 1
+        init: 3200
+        min: 1300
+        max: 3200
+tilt2_controller:
+    controller:
+        package: dynamixel_controllers
+        module: joint_position_controller
+        type: JointPositionController
+    joint_name: tilt2_joint
+    joint_speed: 2.0
+    motor:
+        id: 2
+        init: 300
+        min: 300
+        max: 2300

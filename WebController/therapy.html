@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, length=device-length, initial-scale=1">
+		<style>
+			body {
+				background-image: url("/src/media/therapy_screen.png");
+				background-repeat: no-repeat;
+				background-size: cover, cover;
+				background-position: fixed;
+			}
+			.header {
+			    padding: 0% 0% 80% 0%;
+			}
+			.rep_box {
+				padding: 0% 0% 10% 81%;
+			}
+			.freq_box {
+				padding: 0% 0% 10% 71%;
+			}
+			.vel_box{
+				padding: 0% 0% 5% 50%;
+			}
+			.buttons_box{
+				padding: 0% 0% 0% 0%;
+			}
+			.menu {
+			    padding: 30% 0% 0% 0%;
+			}
+			input[type=number] {
+				padding: 10% 2% 10% 2%;
+				min: 0;
+				width: 50%;
+
+			}
+			.slider {
+					-webkit-appearance: none;
+			    appearance: none;
+			    width: 80%;
+			    height: 15%;
+			    background: white;
+			    outline: none;
+			    -webkit-transition: .2s;
+			    transition: opacity .2s;
+					padding: 2%;
+			}
+			.slider:hover {
+			    opacity: 1;
+			}
+			.column{
+				padding:0% 0% 0% 0%;
+				float: left;
+			}
+			.button{
+				background-color: Transparent;
+				border: none;
+				overflow: hidden;
+				outline: none;
+			}
+			.btn {
+	  		width: 33%;
+			}
+			.image{
+				width: 70%;
+				height: 70%;
+			}
+			.button_menu {
+				background-color: red;
+				border: none;
+				color: white;
+				text-align: center;
+				font-size: 1.6em;
+				border-radius: 12px;
+				outline: none;
+				padding: 5% 10%;
+				width: 65%;
+			}
+			.button_menu:hover {
+			    background-color: #FA8072;
+			}
+
+		</style>
+	</head>
+	<body src ="{{ static_url("media/therapy_screen.png")}}">
+		<div class="header"></div>
+		<div class="rep_box">
+			<input type="number" name="rep" min="0" step="1" value="10" id="repetitions" />
+		</div>
+		<div class="freq_box">
+			<input type="number" name="fre" min="0" value="0.7" id="frequency"/>
+		</div>
+		<div class="vel_box">
+			<div class="slider">
+				<input type="range" name="vel" min="1" max="10" value="3" id="velocity">
+			</div>
+		</div>
+		<div class="buttons_box">
+			<div class="row">
+				<div class="column btn">
+					<button class="button" id="start_therapy"><img class="image" src="{{ static_url("media/start.png")}}"></button>
+				</div>
+				<div class="column btn">
+					<button class="button" onclick="alert('1.Ingrese los par\u00e1metros deseados (Repeticiones-Frecuencia de Movimiento-Velocidad)\n2.Oprima Iniciar (Bot\u00f3n Verde)')"><img class="image" src="{{ static_url("media/info.png")}}"></button>
+				</div>
+				<div class="column btn">
+					<button class="button" id="stop_therapy"><img class="image" src="{{ static_url("media/stop.png")}}"></button>
+				</div>
+			</div>
+		</div>
+		<div class="menu"><a href="/">
+			<center> <button class="button_menu">Men&uacute;</button></center>
+		</a></div>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script src="{{ static_url("ws-client.js")}}"></script>
+	</body>
+</html>

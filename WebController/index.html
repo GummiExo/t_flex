@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, length=device-length, initial-scale=1">
+
+		<style type="text/css">
+			body {
+				background-image: url("/src/media/menu_screen.png");
+				background-repeat: no-repeat;
+				background-size: cover, cover;
+				/* background-position: fixed; */
+			}
+			.config {
+		    padding: 0% 0% 4% 80%;
+			}
+			.bci {
+		    padding: 0% 80% 0% 0%;
+			}
+			.header {
+		    padding: 0% 0% 35% 5%;
+			}
+			.calibration {
+		    padding: 0% 0% 25% 0%;
+			}
+			.therapy {
+		    padding: 0% 0% 2% 0%;
+			}
+			.assistance {
+			    padding: 0% 0% 5% 0%;
+			}
+			.exit {
+			    padding: 0% 0% 0% 0%;
+			}
+			.button{
+				background-color: Transparent;
+				border: none;
+				overflow: hidden;
+				outline: none;
+			}
+			.image{
+				width: 70%;
+				height: 70%;
+			}
+			.image_conf{
+				width: 120%;
+				height: 120%;
+			}
+			.act_button {
+				background-color: yellow;
+				border: none;
+				padding: 4% 4%;
+				outline: none;
+				border-radius: 12px;
+			}
+			.act_button:hover {
+				background-color: blue;
+			}
+			.buttons {
+		    background-color: #3969DA;
+		    border: none;
+		    color: white;
+		    text-align: center;
+		    font-size: 1.3em;
+				border-radius: 12px;
+				outline: none
+			}
+			.buttons:hover {
+		    background-color: blue;
+			}
+			.button_act {padding: 5% 10%;}
+			.button_cal {padding: 5% 30%;}
+			.button_th {padding: 5% 30%;}
+			.button_as {padding: 5% 25%;}
+			.button_exit {
+				background-color: red;
+				border: none;
+				color: white;
+				text-align: center;
+				font-size: 1.6em;
+				border-radius: 12px;
+				outline: none;
+				padding: 5% 10%;
+				width: 52%;
+			}
+			.button_exit:hover {
+					background-color: #FA8072;
+			}
+
+		</style>
+	</head>
+	<body src ="{{ static_url("media/menu_screen.png")}}">
+	<!-- <body> -->
+		<div class="config" align="right">
+			<a href="configure.html"><button class="button"><img class="image_conf" src="{{ static_url("media/configure.png")}}"></button></a>
+		</div>
+		<div class="bci" align="left">
+			<a href="bci.html"><button class="button"><img class="image" src="{{ static_url("media/bci.png")}}"></button></a>
+		</div>
+		<div class="header">
+			<div align="left"><button class="act_button" id="activate_device">Activar Motores</button></div>
+		</div>
+		<div class="calibration"><a href="calibration.html">
+			<center> <button class="buttons button_cal">Calibrar</button> </center>
+		</a></div>
+		<div class="therapy"><a href="therapy.html">
+			<center> <button class="buttons button_th">Terapia</button> </center>
+		</a></div>
+		<div class="assistance"><a href="assistance.html">
+			<center> <button class="buttons button_as">Asistencia</button> </center>
+		</a></div>
+		<div class="exit">
+			<center> <button class="button_exit" id="exit">Salir</button></center>
+		</div>
+
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script src="{{ static_url("ws-client.js")}}"></script>
+		<!-- <script src="{{ static_url("jquery.min.js")}}"></script> -->
+	</body>
+</html>
