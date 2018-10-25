@@ -16,7 +16,16 @@
 
 /* Authors: Taehun Lim (Darby) */
 
-#include "dynamixel_workbench_controllers/position_control.h"
+#include <iostream>
+#include <cstdlib>
+#include <stdint.h>
+#include <t_flex/position_control.h>
+#include <t_flex/JointSpeed.h>
+#include <t_flex/TorqueEnable.h>
+#include <t_flex/GoalPosition.h>
+#include "std_msgs/Bool.h"
+
+using namespace std;
 
 PositionControl::PositionControl()
     :node_handle_("")
@@ -32,7 +41,7 @@ PositionControl::PositionControl()
   dxl_wb_ = new DynamixelWorkbench;
 
   dxl_wb_->begin(device_name.c_str(), dxl_baud_rate);
-  
+
   if (dxl_wb_->scan(dxl_id_, &dxl_cnt_, scan_range) != true)
   {
     ROS_ERROR("Not found Motors, Please check scan range or baud rate");
@@ -63,7 +72,7 @@ PositionControl::~PositionControl()
 void PositionControl::initMsg()
 {
   printf("-----------------------------------------------------------------------\n");
-  printf("  dynamixel controller; control position            \n");
+  printf("           Dynamixel Controller Running : Position Control             \n");
   printf("-----------------------------------------------------------------------\n");
   printf("\n");
 
@@ -84,12 +93,14 @@ void PositionControl::initPublisher()
 
 void PositionControl::initSubscriber()
 {
-  joint_command_sub_ = node_handle_.subscribe("goal_dynamixel_position", 10, &PositionControl::goalJointPositionCallback, this);
+  joint_position_sub_ = node_handle_.subscribe("goal_dynamixel_position", 10, &PositionControl::goalJointPositionCallback, this);
 }
 
 void PositionControl::initServer()
 {
-  joint_command_server_ = node_handle_.advertiseService("joint_command", &PositionControl::jointCommandMsgCallback, this);
+  joint_command_server_ = node_handle_.advertiseService("joint_goal_position", &PositionControl::jointCommandMsgCallback, this);
+  joint_speed_server_ = node_handle_.advertiseService("joint_goal_speed", &PositionControl::jointSpeedCallback, this);
+  joint_torque_enable_server_ = node_handle_.advertiseService("joint_torque_enable", &PositionControl::jointTorqueEnableCallback, this);
 }
 
 void PositionControl::dynamixelStatePublish()
@@ -147,6 +158,8 @@ void PositionControl::controlLoop()
   jointStatePublish();
 }
 
+// Callbacks
+// Services
 bool PositionControl::jointCommandMsgCallback(dynamixel_workbench_msgs::JointCommand::Request &req,
                                               dynamixel_workbench_msgs::JointCommand::Response &res)
 {
@@ -171,21 +184,35 @@ bool PositionControl::jointCommandMsgCallback(dynamixel_workbench_msgs::JointCom
   res.result = ret;
 }
 
-void PositionControl::goalJointPositionCallback(const sensor_msgs::JointState::ConstPtr &msg)
+bool PositionControl::jointSpeedCallback(t_flex::JointSpeed::Request &req,
+                                         t_flex::JointSpeed::Response &res)
 {
-  double goal_position[dxl_cnt_] = {0.0, };
+  int32_t speed = 0;
 
+  speed = req.set_speed;
+
+  bool ret = dxl_wb_->goalSpeed(req.id, speed);
+
+  res.result = ret;
+}
+
+bool PositionControl::jointTorqueEnableCallback(t_flex::TorqueEnable::Request &req,
+                                                t_flex::TorqueEnable::Response &res)
+{
+  bool torque_enable = false;
+
+  torque_enable = req.torque_enable;
+
+  bool ret = dxl_wb_->torque(req.id, torque_enable);
+
+  res.result = ret;
+}
+
+// Topics
+void PositionControl::goalJointPositionCallback(const t_flex::GoalPosition::ConstPtr& msg)
+{
   for (int index = 0; index < dxl_cnt_; index++)
-    goal_position[index] = msg->position.at(index);
-
-  int32_t goal_dxl_position[dxl_cnt_] = {0, };
-
-  for (int index = 0; index < dxl_cnt_; index++)
-  {
-    goal_dxl_position[index] = dxl_wb_->convertRadian2Value(dxl_id_[index], goal_position[index]);
-  }
-
-  dxl_wb_->syncWrite("Goal_Position", goal_dxl_position);
+    dxl_wb_->goalPosition(msg->id[index], msg->goal_position[index]);
 }
 
 int main(int argc, char **argv)

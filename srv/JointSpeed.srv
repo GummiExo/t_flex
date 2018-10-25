@@ -1,0 +1,6 @@
+# This message is used to set speed to dynamixel
+
+uint8 id
+float32 set_speed
+---
+bool result
