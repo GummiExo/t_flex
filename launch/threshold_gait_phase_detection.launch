@@ -1,5 +1,5 @@
 <launch>
   <!-- <node pkg="plotjuggler" type="PlotJuggler" name="my_plot_Juggler" /> -->
-  <node pkg="gummi_ankle" name="imu_data_acquisition" type="imu_data_acquisition.py" output ='screen'/>
-  <node pkg="gummi_ankle" name="threshold_gait_detection_node" type="threshold_gait_detection_node" output ='screen'/>
+  <node pkg="t_flex" name="imu_data_acquisition" type="imu_data_acquisition.py" output ='screen'/>
+  <node pkg="t_flex" name="threshold_gait_detection_node" type="threshold_gait_detection_node" output ='screen'/>
 </launch>

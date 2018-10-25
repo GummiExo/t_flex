@@ -1,24 +1,17 @@
 <!-- -*- mode: XML -*- -->
 
 <launch>
-     <node name="dynamixel_manager" pkg="dynamixel_controllers" type="controller_manager.py" required="true">
-         <rosparam>
-             namespace: dxl_manager
-             serial_ports:
-                 pan_tilt_port:
-                     port_name: "/dev/ttyUSB0"
-                     baud_rate: 57142
-                     min_motor_id: 1
-                     max_motor_id: 2
-                     update_rate: 34
-         </rosparam>
-     </node>
-<!-- Start tilt joint controller -->
-    <rosparam file="$(find gummi_ankle)/yaml/tiltV2.yaml" command="load"/>
-    <node name="tilt_controller_spawner" pkg="dynamixel_controllers" type="controller_spawner.py"
-          args="--manager=dxl_manager
-                --port pan_tilt_port
-		              tilt1_controller
-                tilt2_controller
-		"/>
+  <arg name="device_name"                default="/dev/ttyUSB0"/>
+  <arg name="baud_rate"                  default="500000"/>
+  <arg name="scan_range"                 default="10"/>
+  <arg name="profile_velocity"           default="200"/>
+  <arg name="profile_acceleration"       default="50"/>
+
+  <param name="device_name"              value="$(arg device_name)"/>
+  <param name="baud_rate"                value="$(arg baud_rate)"/>
+  <param name="scan_range"               value="$(arg scan_range)"/>
+  <param name="profile_velocity"         value="$(arg profile_velocity)"/>
+  <param name="profile_acceleration"     value="$(arg profile_acceleration)"/>
+
+  <node name="position_control" pkg="t_flex" type="position_control" required="true" output="screen"/>
 </launch>

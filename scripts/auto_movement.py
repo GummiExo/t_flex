@@ -6,7 +6,7 @@ import time
 from dynamixel_msgs.msg import MotorStateList
 from dynamixel_controllers.srv import *
 from std_msgs.msg import Float64, Bool
-from gummi_ankle.msg import GaitEvent
+from t_flex.msg import GaitEvent
 import os
 
 class Controller(object):
