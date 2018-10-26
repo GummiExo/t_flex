@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from gummi_ankle.msg import GaitPhase
+from t_flex.msg import GaitPhase
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
@@ -11,7 +11,7 @@ class GaitPhasesDisplayer(object):
         self.gait_phase = -1
         """Image Loading"""
         rp = RosPack()
-        path = rp.get_path('gummi_ankle')
+        path = rp.get_path('t_flex')
         self.img_hs = plt.imread(path+'/image/heel_strike.png',0)
         self.img_ff = plt.imread(path+'/image/flat_foot.png',0)
         self.img_mst = plt.imread(path+'/image/midstance.png',0)

@@ -4,7 +4,7 @@ import rospy
 import time
 import os
 from dynamixel_workbench_msgs.msg import DynamixelStateList
-from std_msgs.msg import Float64, Bool
+from std_msgs.msg import Bool
 
 class T_FlexCalibration(object):
     def __init__(self):

@@ -38,7 +38,7 @@ class Controller(object):
             if opt == "-t":
                 self.time = int(arg)
         home = os.path.expanduser('~')
-        os.chdir(home + '/catkin_ws/src/gummi_ankle/yaml')
+        os.chdir(home + '/catkin_ws/src/t_flex/yaml')
         f = open("calibrationAngle.yaml", "r+")
         params = [f.readline().strip().split()[1] for i in range(4)]
         self.ValueToPubUp1 = float(params[0])
@@ -134,6 +134,7 @@ def set_motor_speed(speed):
 
 def main():
     c = Controller()
+    rospy.on_shutdown(release_motors)
     rospy.spin()
     rospy.loginfo("----------------------- ASSISTANT FINISHED ----------------------")
 

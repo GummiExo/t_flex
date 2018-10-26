@@ -1,7 +1,7 @@
 #ifndef GAIT_CYCLE_CLASSIFIER
 #define GAIT_CYCLE_CLASSIFIER
 
-#include "gummi_ankle/feature_extractor.hpp"
+#include "t_flex/feature_extractor.hpp"
 #include <string>
 
 using namespace std;

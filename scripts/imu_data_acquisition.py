@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import rospy
-from gummi_ankle.msg import IMUData
+from t_flex.msg import IMUData
 from std_msgs.msg import Bool
 import smbus
 import time

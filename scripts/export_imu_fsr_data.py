@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import rospy
-from gummi_ankle.msg import Insole
-from gummi_ankle.msg import IMUData
+from t_flex.msg import Insole
+from t_flex.msg import IMUData
 from std_msgs.msg import Bool
 import time
 import datetime
@@ -18,8 +18,8 @@ class IMU_FSR_Data_Exporter(object):
     def subscribers(self):
         now = datetime.datetime.now()
         home = os.path.expanduser("~")
-        self.filename_imu = home + '/catkin_ws/src/gummi_ankle/log/imu_data_'+str(now.month)+'-'+str(now.day)+'-'+str(now.hour)+'-'+str(now.minute)+'-'+str(now.second)+ '.bag'
-        #self.filename_fsr = home + '/catkin_ws/src/gummi_ankle/log/fsr_data_'+str(now.month)+'-'+str(now.day)+'-'+str(now.hour)+'-'+str(now.minute)+'-'+str(now.second)+ '.bag'
+        self.filename_imu = home + '/catkin_ws/src/t_flex/log/imu_data_'+str(now.month)+'-'+str(now.day)+'-'+str(now.hour)+'-'+str(now.minute)+'-'+str(now.second)+ '.bag'
+        #self.filename_fsr = home + '/catkin_ws/src/t_flex/log/fsr_data_'+str(now.month)+'-'+str(now.day)+'-'+str(now.hour)+'-'+str(now.minute)+'-'+str(now.second)+ '.bag'
         self.bag_imu = rosbag.Bag(self.filename_imu,'w')
         #self.bag_fsr = rosbag.Bag(self.filename_fsr,'w')
         # print("Bag files were created.")

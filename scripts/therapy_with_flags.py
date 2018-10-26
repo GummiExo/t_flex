@@ -20,7 +20,7 @@ class Controller(object):
         self.ValueToPubDown1 = float(params[1])
         self.ValueToPubUp2 = float(params[2])
         self.ValueToPubDown2 = float(params[3])
-        self.speed = 3*1024/10
+        self.speed = 2*1024/10
         set_motor_speed(self.speed)
         rospy.init_node('therapy_with_flags', anonymous = True)
         self.command = rospy.Publisher("/goal_dynamixel_position", GoalPosition, queue_size = 1, latch = False)

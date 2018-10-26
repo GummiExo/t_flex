@@ -84,11 +84,11 @@ def set_motor_speed(speed):
 
 def main():
     c = TherapyController()
+    rospy.on_shutdown(release_motors)
     while not (rospy.is_shutdown()):
         c.process()
         break
     rospy.loginfo("Controller Finished")
-    rospy.on_shutdown(release_motors)
 
 if __name__ == '__main__':
     try:

@@ -6,7 +6,7 @@ import os
 import sys
 import numpy as np
 import RPi.GPIO as GPIO
-from gummi_ankle.msg import Insole
+from t_flex.msg import Insole
 
 
 class InsoleSensors(object):

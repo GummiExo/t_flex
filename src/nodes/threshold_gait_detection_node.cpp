@@ -2,8 +2,8 @@
 #include "agora/feature_extractor.hpp"
 #include "agora/gait_cycle_classifier.hpp"
 #include "ros/ros.h"
-#include <gummi_ankle/IMUData.h>
-#include <gummi_ankle/GaitPhase.h>
+#include <t_flex/IMUData.h>
+#include <t_flex/GaitPhase.h>
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -21,7 +21,7 @@ Gait_cycle_classifier *classifer = new Gait_cycle_classifier();
 //used to receive the information of newly-recognized states
 State_recognized_info latest_state_info;
 
-void callback(const gummi_ankle::IMUData imu_data){
+void callback(const t_flex::IMUData imu_data){
   accel_y = imu_data.accel_y;
   gyro_y = imu_data.gyro_y;
   time_stamp = imu_data.time_stamp;
@@ -52,7 +52,7 @@ int main(int argc, char** argv){
 	ros::NodeHandle n;
 
   // ROS publisher. Topic: gait_phase_detection
-  ros::Publisher chatter_pub = n.advertise<gummi_ankle::GaitPhase>("gait_phase_detection", 1000);
+  ros::Publisher chatter_pub = n.advertise<t_flex::GaitPhase>("gait_phase_detection", 1000);
   // ROS subscriber. Topic: imu_data
   ros::Subscriber sub_imu = n.subscribe("imu_data", 1000, callback);
   // ROS subscriber. Topic: imu_data
@@ -65,7 +65,7 @@ int main(int argc, char** argv){
   while (ros::ok()) {
     if (!kill_flag){
       // Publish GaitPhase message
-      gummi_ankle::GaitPhase gait_phase;
+      t_flex::GaitPhase gait_phase;
       gait_phase.header.frame_id = "/" + node_name;
       if (get_state_string(latest_state_info.recognized_state) == "Heel strike"){
         gait_phase.phase = 1;
