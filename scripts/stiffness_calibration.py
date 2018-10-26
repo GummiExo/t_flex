@@ -44,15 +44,15 @@ class T_FlexCalibration(object):
         self.StiffnessValueToPub1 = self.variable_stiffness_angle1
         self.StiffnessValueToPub2 = self.variable_stiffness_angle2
         # Validation Motor id 3
-        # if self.StiffnessValueToPub1 > 0:
-        #     self.StiffnessValueToPub1 = 0
-        # if self.StiffnessValueToPub1 < -3.28:
-        #     self.StiffnessValueToPub1 = -3.28
-        # # Validation Motor id 4
-        # if self.StiffnessValueToPub2 > 3.28:
-        #     self.StiffnessValueToPub2 = 3.28
-        # if self.StiffnessValueToPub2 < 0:
-        #     self.StiffnessValueToPub2 = 0
+        if self.StiffnessValueToPub1 > 2900:
+            self.StiffnessValueToPub1 = 2900
+        if self.StiffnessValueToPub1 < 1000:
+            self.StiffnessValueToPub1 = 1000
+        # Validation Motor id 4
+        if self.StiffnessValueToPub2 > 3200:
+            self.StiffnessValueToPub2 = 3200
+        if self.StiffnessValueToPub2 < 1300:
+            self.StiffnessValueToPub2 = 1300
         rospy.loginfo("Stiffness Value motor 1 = %s Stiffness Value motor 2 = %s",self.StiffnessValueToPub1,self.StiffnessValueToPub2)
         home = os.path.expanduser("~")
         os.chdir(home + '/catkin_ws/src/t_flex/yaml')

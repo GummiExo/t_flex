@@ -8,10 +8,10 @@ from std_msgs.msg import Bool
 
 class T_FlexCalibration(object):
     def __init__(self):
-        self.max_angle_motor1 = 1177
-        self.min_angle_motor1 = 3355
-        self.max_angle_motor2 = 963
-        self.min_angle_motor2 = 3190
+        self.max_angle_motor1 = 900
+        self.min_angle_motor1 = 3000
+        self.max_angle_motor2 = 1200
+        self.min_angle_motor2 = 3300
         self.Motor1State = None
         self.Motor2State = None
         rospy.init_node('angle_calibration', anonymous = True)
@@ -51,24 +51,24 @@ class T_FlexCalibration(object):
         self.ValueToPubDown1= self.max_angle_motor1
         self.ValueToPubUp2 = self.min_angle_motor2
         self.ValueToPubDown2= self.max_angle_motor2
-        # # Validation Motor id 3
-        # if self.ValueToPubUp1 > 0:
-        #     self.ValueToPubUp1 = 0
-        # if self.ValueToPubUp1 < -3.28:
-        #     self.ValueToPubUp1 = -3.28
-        # if self.ValueToPubDown1 > 0:
-        #     self.ValueToPubDown1 = 0
-        # if self.ValueToPubDown1 < -3.28:
-        #     self.ValueToPubDown1 = -3.28
-        # # Validation Motor id 4
-        # if self.ValueToPubUp2 > 3.28:
-        #     self.ValueToPubUp2 = 3.28
-        # if self.ValueToPubUp2 < 0:
-        #     self.ValueToPubUp2 = 0
-        # if self.ValueToPubDown2 > 3.28:
-        #     self.ValueToPubDown2 = 3.28
-        # if self.ValueToPubDown2 < 0:
-        #     self.ValueToPubDown2 = 0
+        # Validation Motor id 3
+        if self.ValueToPubUp1 > 2900:
+            self.ValueToPubUp1 = 2900
+        if self.ValueToPubUp1 < 1000:
+            self.ValueToPubUp1 = 1000
+        if self.ValueToPubDown1 > 2900:
+            self.ValueToPubDown1 = 2900
+        if self.ValueToPubDown1 < 1000:
+            self.ValueToPubDown1 = 2900
+        # Validation Motor id 4
+        if self.ValueToPubUp2 > 3200:
+            self.ValueToPubUp2 = 3200
+        if self.ValueToPubUp2 < 1300:
+            self.ValueToPubUp2 = 1300
+        if self.ValueToPubDown2 > 3200:
+            self.ValueToPubDown2 = 3200
+        if self.ValueToPubDown2 < 1300:
+            self.ValueToPubDown2 = 1300
         rospy.loginfo("Value Up motor 1 = %s Value Down motor 1 = %s",self.ValueToPubUp1,self.ValueToPubDown1)
         rospy.loginfo("Value Up motor 2 = %s Value Down motor 2 = %s",self.ValueToPubUp2,self.ValueToPubDown2)
         home = os.path.expanduser("~")
