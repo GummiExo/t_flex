@@ -59,6 +59,14 @@ PositionControl::PositionControl()
   initPublisher();
   initSubscriber();
   initServer();
+  // Release Motors
+  bool torque_enable = false;
+  uint8_t id_motor = 0;
+  for (int index = 0; index < dxl_cnt_; index++) {
+    id_motor = dxl_id_[index];
+    dxl_wb_->torque(id_motor, torque_enable);
+    printf("Motor ID : %d, ready to use!\n",dxl_id_[index]);
+  }
 }
 
 PositionControl::~PositionControl()
