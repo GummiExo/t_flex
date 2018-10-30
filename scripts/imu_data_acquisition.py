@@ -454,7 +454,7 @@ def main():
 
     # Parameters of ROS message
     msg = IMUData()
-    rate = rospy.Rate(100)
+    rate = rospy.Rate(100)   # 100 Hz
     start_time = time.time()
 
     """Read IMU calibration status"""

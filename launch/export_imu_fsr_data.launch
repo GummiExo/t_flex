@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="t_flex" name="imu_data_acquisition" type="imu_data_acquisition.py" output ='screen'/>
+  <node pkg="t_flex" name="fsr_data_acquisition" type="fsr_data_acquisition.py" output ='screen'/>
+  <!-- <node pkg="plotjuggler" type="PlotJuggler" name="my_plot_Juggler" /> -->
+  <node pkg="t_flex" name="export_csv" type="export_csv.py" output ='screen'/>
+</launch>

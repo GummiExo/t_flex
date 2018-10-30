@@ -35,7 +35,7 @@ class InsoleSensors(object):
 def main():
     s = InsoleSensors(toe=4, l_meta=17, r_meta=27, heel=22)
     msg = Insole()
-    rate = rospy.Rate(650)
+    rate = rospy.Rate(200)
     print('Reading FSR data, press Ctrl-C to quit...')
     while not rospy.is_shutdown():
         s.read_data()
