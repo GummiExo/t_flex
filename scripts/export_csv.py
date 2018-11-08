@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import rospy
-from gummi_ankle.msg import Insole
-from gummi_ankle.msg import IMUData
+from t_flex.msg import Insole
+from t_flex.msg import IMUData
 from std_msgs.msg import Bool
 import time
 import datetime
