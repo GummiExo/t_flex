@@ -8,7 +8,6 @@ project(t_flex)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  agora
   roscpp
   rospy
   std_msgs
@@ -51,7 +50,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES
-  CATKIN_DEPENDS agora roscpp rospy message_runtime
+  CATKIN_DEPENDS roscpp rospy message_runtime
 #  DEPENDS system_lib
 )
 
@@ -72,11 +71,6 @@ include_directories(
 #  gait_cycle_classifier
 #)
 
-# Build main ROS node for start dynamixel controllers
-add_executable(position_control src/nodes/position_control.cpp)
-target_link_libraries(position_control
-  ${catkin_LIBRARIES}
-)
 
 #############
 ## Install ##
@@ -84,21 +78,12 @@ target_link_libraries(position_control
 
 ## Mark executables and/or libraries for installation
 #install(TARGETS threshold_gait_detection_node
-install(TARGETS position_control
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
 
 ## Mark cpp header files for installation
-install(DIRECTORY include/agora/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-  PATTERN ".svn" EXCLUDE
-)
-install(DIRECTORY include/dynamixel_workbench_controllers/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-  PATTERN ".svn" EXCLUDE
-)
+#install(DIRECTORY include/agora/
+#  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#  FILES_MATCHING PATTERN "*.h"
+#  PATTERN ".svn" EXCLUDE
+#)
+
 
