@@ -21,10 +21,10 @@ class Controller(object):
         self.ValueToPubDown2 = float(params[3])
         self.speed = 1024/10
         set_motor_speed(self.speed)
-        rospy.init_node('therapy_with_flags', anonymous = True)
-        rospy.Subscriber("/kill_therapy", Bool, self.updateFlagTherapy)
-        rospy.Subscriber("/update_speed", Float64, self.updateSpeed)
-        rospy.Subscriber("/enable_device", Bool, self.updateFlagEnable)
+        rospy.init_node('t_flex_therapy_with_flags', anonymous = True)
+        rospy.Subscriber("/t_flex/kill_therapy", Bool, self.updateFlagTherapy)
+        rospy.Subscriber("/t_flex/update_speed", Float64, self.updateSpeed)
+        rospy.Subscriber("/t_flex/enable_device", Bool, self.updateFlagEnable)
         self.kill_therapy = False
         self.enable = None
         self.disabled = None
@@ -68,13 +68,13 @@ class Controller(object):
 
     def motor_position_command(self, val_motor1 = 0, val_motor2 = 0):
         #create service handler for motor1
-        service = dmx_firmware.DmxCommandClientService(service_name = '/t_flex/goal_position')
+        service = dmx_firmware.DmxCommandClientService(service_name = '/t_flex_motors/goal_position')
         service.service_request_threaded(id = 1,val = val_motor1)
         service.service_request_threaded(id = 2, val = val_motor2)
 
 def release_motors():
     val = False
-    service = '/t_flex/torque_enable'
+    service = '/t_flex_motors/torque_enable'
     rospy.wait_for_service(service)
     try:
          enable_torque = rospy.ServiceProxy(service, TorqueEnable)
@@ -90,7 +90,7 @@ def release_motors():
 
 def set_motor_speed(speed):
     val = speed
-    service = '/t_flex/goal_speed'
+    service = '/t_flex_motors/goal_speed'
     rospy.wait_for_service(service)
     try:
          motor_speed = rospy.ServiceProxy(service, JointCommand)

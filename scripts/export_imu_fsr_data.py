@@ -11,9 +11,9 @@ import rosbag
 
 class IMU_FSR_Data_Exporter(object):
     def __init__(self):
-        rospy.init_node("export_imu_fsr_data",anonymous=True)
+        rospy.init_node("t_flex_export_imu_data",anonymous=True)
         self.kill_flag = False
-        rospy.Subscriber("kill_gait_assistance", Bool, self.updateFlagExportData)
+        rospy.Subscriber("/t_flex/kill_gait_assistance", Bool, self.updateFlagExportData)
 
     def subscribers(self):
         now = datetime.datetime.now()
@@ -28,7 +28,7 @@ class IMU_FSR_Data_Exporter(object):
         self.time_stamp = 0
         self.writing = True
         #self.fsr_sub = rospy.Subscriber("/fsr_data", Insole, self.callback_fsr)
-        self.imu_sub = rospy.Subscriber("/imu_data", IMUData, self.callback_imu)
+        self.imu_sub = rospy.Subscriber("/t_flex_imu_data", IMUData, self.callback_imu)
 
     def updateFlagExportData(self,kill_signal):
         self.kill_flag = kill_signal.data
@@ -39,13 +39,13 @@ class IMU_FSR_Data_Exporter(object):
 
         # Reading and logging imu_data
         if self.writing:
-            self.bag_imu.write('/imu_data',msg)
+            self.bag_imu.write('/t_flex/imu_data',msg)
             print("Time: {} seconds".format(self.time_stamp/1000.0))
 
     def callback_fsr(self, msg):
         # Reading and logging imu_data
         if self.writing:
-            self.bag_fsr.write('/fsr_data',msg)
+            self.bag_fsr.write('/t_flex/fsr_data',msg)
 
 
 def main(exp):
@@ -67,7 +67,7 @@ def main(exp):
             time.sleep(0.5)
             #exp.bag_fsr.close()
             #time.sleep(0.5)
-            os.system('rostopic echo -b '+ exp.filename_imu + ' -p /imu_data > ' + exp.filename_imu[:-4] + '.csv')
+            os.system('rostopic echo -b '+ exp.filename_imu + ' -p /t_flex/imu_data > ' + exp.filename_imu[:-4] + '.csv')
             os.system('rm ' + exp.filename_imu)
             #os.system('rostopic echo -b '+ exp.filename_fsr + ' -p /fsr_data > ' + exp.filename_fsr[:-4] + '.csv')
             #os.system('rm ' + exp.filename_fsr)

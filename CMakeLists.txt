@@ -60,27 +60,52 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-# Build main ROS node for gait phase detection based on thresholds
-#add_executable(threshold_gait_detection_node src/nodes/threshold_gait_detection_node.cpp)
-#target_link_libraries(threshold_gait_detection_node
-#  ${catkin_LIBRARIES}
-#  feature_extractor
-#  gait_cycle_classifier
-#)
+# A collection of utilities for the gait phase classifier
+add_library(feature_extractor
+  src/util/feature_extractor.cpp
+)
+target_link_libraries(feature_extractor
+  ${catkin_LIBRARIES}
+)
 
+add_library(gait_cycle_classifier
+  src/util/gait_cycle_classifier.cpp
+)
+target_link_libraries(gait_cycle_classifier
+  ${catkin_LIBRARIES}
+  feature_extractor
+)
+
+# Build main ROS node for threshold-based gait phase detection
+add_executable(gait_phases_threshold_node src/nodes/gait_phases_threshold_node.cpp)
+target_link_libraries(gait_phases_threshold_node
+  ${catkin_LIBRARIES}
+  feature_extractor
+  gait_cycle_classifier
+)
+
+add_executable(threshold_gait_detection_node src/nodes/threshold_gait_detection_node.cpp)
+target_link_libraries(threshold_gait_detection_node
+  ${catkin_LIBRARIES}
+  feature_extractor
+  gait_cycle_classifier
+)
 
 #############
 ## Install ##
 #############
 
 ## Mark executables and/or libraries for installation
-#install(TARGETS threshold_gait_detection_node
 
-## Mark cpp header files for installation
-#install(DIRECTORY include/agora/
-#  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#  FILES_MATCHING PATTERN "*.h"
-#  PATTERN ".svn" EXCLUDE
-#)
+install(TARGETS feature_extractor gait_cycle_classifier gait_phases_threshold_node
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE
+)
 

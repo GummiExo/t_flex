@@ -1,7 +1,7 @@
 <launch>
   <arg name="usb_port"                default="/dev/ttyUSB0"/>
   <arg name="dxl_baud_rate"           default="500000"/>
-  <arg name="namespace"               default="t_flex"/>
+  <arg name="namespace"               default="t_flex_motors"/>
 
   <arg name="use_moveit"              default="false"/>
   <arg name="use_joint_state"         default="true"/>

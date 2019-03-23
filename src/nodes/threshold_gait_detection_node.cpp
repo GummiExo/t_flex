@@ -1,6 +1,6 @@
 #include <stdint.h>
-#include "agora/feature_extractor.hpp"
-#include "agora/gait_cycle_classifier.hpp"
+#include <t_flex/feature_extractor.hpp>
+#include <t_flex/gait_cycle_classifier.hpp>
 #include "ros/ros.h"
 #include <t_flex/IMUData.h>
 #include <t_flex/GaitPhase.h>
@@ -54,9 +54,9 @@ int main(int argc, char** argv){
   // ROS publisher. Topic: gait_phase_detection
   ros::Publisher chatter_pub = n.advertise<t_flex::GaitPhase>("gait_phase_detection", 1000);
   // ROS subscriber. Topic: imu_data
-  ros::Subscriber sub_imu = n.subscribe("imu_data", 1000, callback);
+  ros::Subscriber sub_imu = n.subscribe("/t_flex/imu_data", 1000, callback);
   // ROS subscriber. Topic: imu_data
-  ros::Subscriber sub_kill = n.subscribe("kill_gait_assistance", 1000, should_kill);
+  ros::Subscriber sub_kill = n.subscribe("/t_flex/kill_gait_assistance", 1000, should_kill);
 
   // Running at 500Hz
 	ros::Rate loop_rate(500);

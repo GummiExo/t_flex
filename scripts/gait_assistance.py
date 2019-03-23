@@ -4,6 +4,7 @@
 import sys, getopt
 import rospy
 import time
+import dmx_firmware
 from dynamixel_workbench_msgs.msg import DynamixelStatusList
 from dynamixel_workbench_msgs.srv import JointCommand, TorqueEnable
 from t_flex.msg import GaitPhase
@@ -28,11 +29,11 @@ class Controller(object):
                             7: "Invalid"}
         rospy.loginfo("------------------------- GAIT ASSISTANT ------------------------")
         rospy.loginfo("----------------------- ASSISTANT STARTED -----------------------")
-        rospy.init_node('gait_assistance', anonymous = True)
+        rospy.init_node('t_flex_gait_assistance', anonymous = True)
         # self.command = rospy.Publisher("/goal_dynamixel_position", GoalPosition, queue_size = 1, latch = False)
-        self.kill = rospy.Publisher("kill_gait_assistance", Bool, queue_size = 1, latch = False)
-        self.flag = rospy.Subscriber("kill_gait_assistance", Bool, self.updateFlagGaitAssistance)
-        rospy.Subscriber("/gait_phase_detection", GaitPhase, self.updateGaitEvent)
+        self.kill = rospy.Publisher("/t_flex/kill_gait_assistance", Bool, queue_size = 1, latch = False)
+        self.flag = rospy.Subscriber("/t_flex/kill_gait_assistance", Bool, self.updateFlagGaitAssistance)
+        rospy.Subscriber("/t_flex/gait_phase_detection", GaitPhase, self.updateGaitEvent)
         opts, args = getopt.getopt(sys.argv[1:], "t:", [])
         for opt, arg in opts:
             if opt == "-t":
@@ -101,13 +102,13 @@ class Controller(object):
 
     def motor_position_command(self, val_motor1 = 0, val_motor2 = 0):
         #create service handler for motor1
-        service = dmx_firmware.DmxCommandClientService(service_name = '/t_flex/goal_position')
+        service = dmx_firmware.DmxCommandClientService(service_name = '/t_flex_motors/goal_position')
         service.service_request_threaded(id = 1,val = val_motor1)
         service.service_request_threaded(id = 2, val = val_motor2)
 
 def release_motors():
     val = False
-    service = '/t_flex/torque_enable'
+    service = '/t_flex_motors/torque_enable'
     rospy.wait_for_service(service)
     try:
          enable_torque = rospy.ServiceProxy(service, TorqueEnable)
@@ -123,7 +124,7 @@ def release_motors():
 
 def set_motor_speed(speed):
     val = speed
-    service = '/t_flex/goal_speed'
+    service = '/t_flex_motors/goal_speed'
     rospy.wait_for_service(service)
     try:
          motor_speed = rospy.ServiceProxy(service, JointCommand)
