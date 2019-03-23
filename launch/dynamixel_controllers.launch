@@ -4,7 +4,7 @@
   <arg name="namespace"               default="t_flex_motors"/>
 
   <arg name="use_moveit"              default="false"/>
-  <arg name="use_joint_state"         default="true"/>
+  <arg name="use_joint_state"         default="false"/>
   <arg name="use_cmd_vel"             default="false"/>
 
   <param name="dynamixel_info"          value="$(find t_flex)/yaml/motors.yaml"/>
