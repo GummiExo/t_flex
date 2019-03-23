@@ -1,17 +1,23 @@
-<!-- -*- mode: XML -*- -->
-
 <launch>
-  <arg name="device_name"                default="/dev/ttyUSB0"/>
-  <arg name="baud_rate"                  default="500000"/>
-  <arg name="scan_range"                 default="10"/>
-  <arg name="profile_velocity"           default="200"/>
-  <arg name="profile_acceleration"       default="50"/>
+  <arg name="usb_port"                default="/dev/ttyUSB0"/>
+  <arg name="dxl_baud_rate"           default="500000"/>
+  <arg name="namespace"               default="t_flex"/>
 
-  <param name="device_name"              value="$(arg device_name)"/>
-  <param name="baud_rate"                value="$(arg baud_rate)"/>
-  <param name="scan_range"               value="$(arg scan_range)"/>
-  <param name="profile_velocity"         value="$(arg profile_velocity)"/>
-  <param name="profile_acceleration"     value="$(arg profile_acceleration)"/>
+  <arg name="use_moveit"              default="false"/>
+  <arg name="use_joint_state"         default="true"/>
+  <arg name="use_cmd_vel"             default="false"/>
 
-  <node name="position_control" pkg="t_flex" type="position_control" required="true" output="screen"/>
+  <param name="dynamixel_info"          value="$(find t_flex)/yaml/motors.yaml"/>
+
+  <node name="$(arg namespace)" pkg="dynamixel_workbench_controllers" type="dynamixel_workbench_controllers"
+        required="true" output="screen" args="$(arg usb_port) $(arg dxl_baud_rate)">
+    <param name="use_moveit"              value="$(arg use_moveit)"/>
+    <param name="use_joint_states_topic"  value="$(arg use_joint_state)"/>
+    <param name="use_cmd_vel_topic"       value="$(arg use_cmd_vel)"/>
+    <rosparam>
+      publish_period: 0.010
+      dxl_read_period: 0.010
+      dxl_write_period: 0.010
+    </rosparam>
+  </node>
 </launch>

@@ -1,0 +1,26 @@
+<launch>
+  <!-- Motor 1 : ID 1 - Motor 2 :ID 2-->
+
+  <arg name="use_ping"         default="true"/>
+  <arg name="id"               default="1"/>
+
+  <arg name="device_name"      default="/dev/ttyUSB0"/>
+  <arg name="baud_rate"        default="500000"/>
+
+  <param name="ping"             value="$(arg use_ping)"  type="bool"/>
+  <param name="ping_id"          value="$(arg id)"/>
+
+  <param name="device_name"      value="$(arg device_name)"/>
+  <param name="baud_rate"        value="$(arg baud_rate)"/>
+
+
+  <node name="single_dynamixel_monitor" pkg="dynamixel_workbench_single_manager"
+        type="single_dynamixel_monitor" required="true" output="screen"/>
+
+  <node name="single_dynamixel_controller" pkg="dynamixel_workbench_single_manager"
+        type="single_dynamixel_controller" required="true" output="screen"/>
+
+  <node name="dynamixel_workbench_single_manager_gui" pkg="dynamixel_workbench_single_manager_gui"
+        type="dynamixel_workbench_single_manager_gui" required="true" output="screen"/>
+
+</launch>

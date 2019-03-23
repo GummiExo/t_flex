@@ -3,9 +3,8 @@
 
 import rospy
 import time
-from dynamixel_workbench_msgs.msg import DynamixelStateList
-from t_flex.srv import JointSpeed, TorqueEnable
-from t_flex.msg import GoalPosition
+import dmx_firmware
+from dynamixel_workbench_msgs.srv import JointCommand, TorqueEnable
 from std_msgs.msg import Bool
 import os
 import sys
@@ -26,7 +25,6 @@ class TherapyController(object):
         self.ValueToPubUp2 = float(params[2])
         self.ValueToPubDown2 = float(params[3])
         set_motor_speed(self.speed)
-        self.command = rospy.Publisher("/goal_dynamixel_position", GoalPosition, queue_size = 1, latch = False)
         rospy.Subscriber("/kill_therapy", Bool, self.updateFlagTherapy)
         self.kill_therapy = False
 
@@ -37,10 +35,12 @@ class TherapyController(object):
         rospy.loginfo("------------------------ THERAPY STARTED ------------------------")
         for n in range (0,self.repeats):
             if not self.kill_therapy:
-                ''' Position Publisher Motor ID 3 and Motor ID 4'''
-                self.command.publish(id=[3,4],goal_position=[self.ValueToPubUp1,self.ValueToPubDown2])
+                ''' Position Publisher Motor ID 1 and Motor ID 2'''
+                # set_position(self.ValueToPubUp1,self.ValueToPubDown2)
+                self.motor_position_command(val_motor1 = self.ValueToPubUp1, val_motor2 = self.ValueToPubDown2)
                 time.sleep(1/self.frecuency)
-                self.command.publish(id=[3,4],goal_position=[self.ValueToPubDown1,self.ValueToPubUp2])
+                # set_position(self.ValueToPubDown1,self.ValueToPubUp2)
+                self.motor_position_command(val_motor1 = self.ValueToPubDown1, val_motor2 = self.ValueToPubUp2)
                 time.sleep(1/self.frecuency)
             else:
                 break
@@ -50,17 +50,23 @@ class TherapyController(object):
         self.automatic_movement()
         release_motors()
 
+    def motor_position_command(self, val_motor1 = 0, val_motor2 = 0):
+        #create service handler for motor1
+        service = dmx_firmware.DmxCommandClientService(service_name = '/t_flex/goal_position')
+        service.service_request_threaded(id = 1,val = val_motor1)
+        service.service_request_threaded(id = 2, val = val_motor2)
+
 def release_motors():
     val = False
-    service = '/joint_torque_enable'
+    service = '/t_flex/torque_enable'
     rospy.wait_for_service(service)
     try:
          enable_torque = rospy.ServiceProxy(service, TorqueEnable)
-         ''' Torque Disabled Motor ID 3 '''
-         resp1 = enable_torque(id=3,torque_enable=val)
+         ''' Torque Disabled Motor ID 1 '''
+         resp1 = enable_torque(id=1,value=val)
          time.sleep(0.001)
-         ''' Torque Disabled Motor ID 4 '''
-         resp2 = enable_torque(id=4,torque_enable=val)
+         ''' Torque Disabled Motor ID 2 '''
+         resp2 = enable_torque(id=2,value=val)
          time.sleep(0.001)
          return (resp1.result & resp2.result)
     except rospy.ServiceException, e:
@@ -68,15 +74,15 @@ def release_motors():
 
 def set_motor_speed(speed):
     val = speed
-    service = '/joint_goal_speed'
+    service = '/t_flex/goal_speed'
     rospy.wait_for_service(service)
     try:
-         motor_speed = rospy.ServiceProxy(service, JointSpeed)
-         ''' Set Speed Motor ID 3 '''
-         resp1 = motor_speed(id=3,set_speed=val)
+         motor_speed = rospy.ServiceProxy(service, JointCommand)
+         ''' Set Speed Motor ID 1 '''
+         resp1 = motor_speed(id=1,value=val)
          time.sleep(0.001)
-         ''' Set Speed Motor ID 4 '''
-         resp2 = motor_speed(id=4,set_speed=val)
+         ''' Set Speed Motor ID 2 '''
+         resp2 = motor_speed(id=2,value=val)
          time.sleep(0.001)
          return (resp1.result & resp2.result)
     except rospy.ServiceException:
