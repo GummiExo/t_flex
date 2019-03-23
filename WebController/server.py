@@ -14,11 +14,11 @@ class Server(object):
 
 	def run_dynamixel_controllers(self):
 		topics = self.rostopic_list()
-		if not (('/t_flex_motors/dynamixel_status' in topics):
+		if not ('/t_flex_motors/dynamixel_status' in topics):
 			rd =threading.Thread(target=self.launchDynamixelControllers)
 			print("Running Dynamixel Controllers ID's: 1 y 2 , Port: ttyUSB0")
 			rd.start()
-			time.sleep(5)
+			time.sleep(10)
 			topics = self.rostopic_list()
 			if ('/t_flex_motors/dynamixel_status' in topics):
 				return True, ("Controladores Inicializados")
@@ -156,7 +156,7 @@ class Server(object):
 
 	def start_therapy_bci(self):
 		topics = self.rostopic_list()
-		if ('/t_flex_motors/dynamixel_status' in topics)
+		if ('/t_flex_motors/dynamixel_status' in topics):
 			if not (('/t_flex/kill_therapy' in topics) or ('/t_flex/gait_phase_detection' in topics) or ('/t_flex/imu_data' in topics)):
 				st_bci = threading.Thread(target=self.runTherapyBCI)
 				st_bci.start()
@@ -194,10 +194,10 @@ class Server(object):
 		os.system("roslaunch t_flex dynamixel_controllers.launch")
 
 	def runAngleCalibration(self):
-		os.system("rosrun t_flex calibrationAngle.py")
+		os.system("rosrun t_flex angle_calibration.py")
 
 	def runStiffnessCalibration(self):
-		os.system("rosrun t_flex calibrationStiffness.py")
+		os.system("rosrun t_flex stiffness_calibration.py")
 
 	def runTherapy(self,repetitions,frequency,velocity):
 		os.system("rosrun t_flex therapy.py " + repetitions + " " + frequency + " " + velocity)

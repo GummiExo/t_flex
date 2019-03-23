@@ -450,7 +450,7 @@ class IMU_BNO055:
     SBy = enum('t_00_5ms', 't_62_5ms', 't_125ms', 't_250ms', 't_500ms', 't_1000ms', 't_2000ms', 't_4000ms',)
 
 def main():
-    sensor = IMU_BNO055(bus=3, address=0x29)
+    sensor = IMU_BNO055(bus=1, address=0x29)
 
     # Parameters of ROS message
     msg = IMUData()

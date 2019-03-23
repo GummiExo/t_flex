@@ -24,7 +24,7 @@ class T_FlexCalibration(object):
         self.Motor2State = None
         rospy.init_node('t_flex_angle_calibration', anonymous = True)
         rospy.Subscriber("/t_flex_motors/dynamixel_status",DynamixelStatusList, self.updateMotorState)
-        rospy.Subscriber("/t_flex_motors/kill_angle_calibration", Bool, self.updateFlagAngleCalibration)
+        rospy.Subscriber("/t_flex/kill_angle_calibration", Bool, self.updateFlagAngleCalibration)
         self.isMotorAngleUpdated = False
         self.CALIBRATE = False
 
