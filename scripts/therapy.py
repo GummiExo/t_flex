@@ -50,11 +50,6 @@ class TherapyController(object):
         self.automatic_movement()
         release_motors()
 
-    def motor_position_command(self, val_motor1 = 0, val_motor2 = 0):
-        #create service handler for motor1
-        service = dmx_firmware.DmxCommandClientService(service_name = '/t_flex_motors/goal_position')
-        service.service_request_threaded(id = 1,val = val_motor1)
-        service.service_request_threaded(id = 2, val = val_motor2)
 
 def release_motors():
     val = False

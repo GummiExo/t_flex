@@ -3,38 +3,42 @@
 import rospy
 import time
 import os
-from dynamixel_workbench_msgs.msg import DynamixelStatusList
+import math
+from dynamixel_msgs.msg import MotorStateList
+import rosparam
 from std_msgs.msg import Bool
 
 class T_FlexCalibration(object):
     def __init__(self):
         home = os.path.expanduser('~')
-        os.chdir(home + '/catkin_ws/src/t_flex/yaml')
-        f = open("motor_position_values.yaml", "r+")
-        params = [f.readline().strip().split()[1] for i in range(4)]
-        self.max_value_motor1 = float(params[0])
-        self.min_value_motor1 = float(params[1])
-        self.max_value_motor2 = float(params[2])
-        self.min_value_motor2 = float(params[3])
+        params = rosparam.load_file(home + '/catkin_ws/src/t_flex/yaml/motors_parameters.yaml')
+        self.max_value_motor1 = params[0][0]['tilt1_controller']['motor']['max']
+        self.min_value_motor1 = params[0][0]['tilt1_controller']['motor']['min']
+        self.init_value_motor1 = params[0][0]['tilt1_controller']['motor']['init']
+        self.max_value_motor2 = params[0][0]['tilt2_controller']['motor']['max']
+        self.min_value_motor2 = params[0][0]['tilt2_controller']['motor']['min']
+        self.init_value_motor2 = params[0][0]['tilt2_controller']['motor']['init']
         self.max_angle_motor1 = self.min_value_motor1
         self.min_angle_motor1 = self.max_value_motor1
         self.max_angle_motor2 = self.min_value_motor2
         self.min_angle_motor2 = self.max_value_motor2
-        self.Motor1State = None
-        self.Motor2State = None
+        self.MotorStateFrontal = None
+        self.MotorStatePosterior = None
         rospy.init_node('t_flex_angle_calibration', anonymous = True)
-        rospy.Subscriber("/t_flex_motors/dynamixel_status",DynamixelStatusList, self.updateMotorState)
+        rospy.Subscriber("/motor_states/frontal_tilt_port",MotorStateList, self.updateMotorStateFrontal)
+        rospy.Subscriber("/motor_states/posterior_tilt_port",MotorStateList, self.updateMotorStatePosterior)
         rospy.Subscriber("/t_flex/kill_angle_calibration", Bool, self.updateFlagAngleCalibration)
-        self.isMotorAngleUpdated = False
+        self.isMotorAngleUpdatedFrontal = False
+        self.isMotorAngleUpdatedPosterior = False
         self.CALIBRATE = False
 
-    def updateMotorState(self, motor_info):
-        if len(motor_info.dynamixel_status) < 2:
-            self.isMotorAngleUpdated = False
-        else:
-            self.Motor1State = motor_info.dynamixel_status[0]
-            self.Motor2State = motor_info.dynamixel_status[1]
-            self.isMotorAngleUpdated = True
+    def updateMotorStateFrontal(self, motor_info):
+        self.MotorStateFrontal = motor_info.motor_states[0]
+        self.isMotorAngleUpdatedFrontal = True
+
+    def updateMotorStatePosterior(self, motor_info):
+        self.MotorStatePosterior = motor_info.motor_states[0]
+        self.isMotorAngleUpdatedPosterior = True
 
     def updateFlagAngleCalibration(self, flag):
         self.CALIBRATE = flag.data
@@ -42,23 +46,40 @@ class T_FlexCalibration(object):
     def calibration_auto_movement(self):
         rospy.loginfo("Calibration Thread Started")
         while not self.CALIBRATE:
-            if self.isMotorAngleUpdated == True:
-                if self.Motor1State.present_position > self.max_angle_motor1:
-                    self.max_angle_motor1 = self.Motor1State.present_position
-                if self.Motor1State.present_position < self.min_angle_motor1:
-                    self.min_angle_motor1 = self.Motor1State.present_position
-                if self.Motor2State.present_position > self.max_angle_motor2:
-                    self.max_angle_motor2 = self.Motor2State.present_position
-                if self.Motor2State.present_position < self.min_angle_motor2:
-                    self.min_angle_motor2 = self.Motor2State.present_position
-                self.isMotorAngleUpdated = False
+            if self.isMotorAngleUpdatedFrontal == True:
+                if self.MotorStateFrontal.position > self.max_angle_motor1:
+                    self.max_angle_motor1 = self.MotorStateFrontal.position
+                if self.MotorStateFrontal.position < self.min_angle_motor1:
+                    self.min_angle_motor1 = self.MotorStateFrontal.position
+                    self.isMotorAngleUpdatedFrontal = False
+            if self.isMotorAngleUpdatedPosterior == True:
+                if self.MotorStatePosterior.position > self.max_angle_motor2:
+                    self.max_angle_motor2 = self.MotorStatePosterior.position
+                if self.MotorStatePosterior.position < self.min_angle_motor2:
+                    self.min_angle_motor2 = self.MotorStatePosterior.position
+                self.isMotorAngleUpdatedPosterior = False
         rospy.loginfo("Calibration Thread Finished")
 
+    def pos_to_rad(self,position,initial):
+        rad = (position - initial)*2*math.pi/4095
+        return rad
+
     def process(self):
-        self.ValueToPubUp1= self.min_angle_motor1
-        self.ValueToPubDown1= self.max_angle_motor1
-        self.ValueToPubUp2 = self.max_angle_motor2
-        self.ValueToPubDown2= self.min_angle_motor2
+        ''' Motor Frontal '''
+        if self.init_value_motor1 == self.min_value_motor1:
+            self.ValueToPubUp1 = self.max_angle_motor1
+            self.ValueToPubDown1= self.min_angle_motor1
+        else:
+            self.ValueToPubUp1 = self.min_angle_motor1
+            self.ValueToPubDown1 = self.max_angle_motor1
+        ''' Motor Posterior '''
+        if self.init_value_motor2 == self.min_value_motor2:
+            self.ValueToPubUp2 = self.max_angle_motor2
+            self.ValueToPubDown2 = self.min_angle_motor2
+        else:
+            self.ValueToPubUp2 = self.min_angle_motor2
+            self.ValueToPubDown2 = self.max_angle_motor2
+        ''' Validation of Range '''
         # Validation Motor id 1
         if self.ValueToPubUp1 > self.max_value_motor1:
             self.ValueToPubUp1 = self.max_value_motor1
@@ -79,6 +100,13 @@ class T_FlexCalibration(object):
             self.ValueToPubDown2 = self.min_value_motor2
         rospy.loginfo("Value Up motor 1 = %s Value Down motor 1 = %s",self.ValueToPubUp1,self.ValueToPubDown1)
         rospy.loginfo("Value Up motor 2 = %s Value Down motor 2 = %s",self.ValueToPubUp2,self.ValueToPubDown2)
+        ''' Conversion to Randians '''
+        self.ValueToPubUp1 = self.pos_to_rad(self.ValueToPubUp1,self.init_value_motor1)
+        self.ValueToPubDown1 = self.pos_to_rad(self.ValueToPubDown1,self.init_value_motor1)
+        self.ValueToPubUp2 = self.pos_to_rad(self.ValueToPubUp2,self.init_value_motor2)
+        self.ValueToPubDown2 = self.pos_to_rad(self.ValueToPubDown2,self.init_value_motor2)
+        rospy.loginfo("Value Up motor 1 Radians = %s Value Down motor 1 Radians = %s",self.ValueToPubUp1,self.ValueToPubDown1)
+        rospy.loginfo("Value Up motor 2 Radians = %s Value Down motor 2 Radians = %s",self.ValueToPubUp2,self.ValueToPubDown2)
         home = os.path.expanduser("~")
         os.chdir(home + '/catkin_ws/src/t_flex/yaml')
         f = open('calibrationAngle.yaml','w+')
@@ -94,7 +122,7 @@ def main():
     c = T_FlexCalibration()
     rate = rospy.Rate(50)
     while not (rospy.is_shutdown()):
-        if not (c.Motor1State == None and c.Motor2State == None):
+        if not (c.MotorStateFrontal == None and c.MotorStatePosterior == None):
             c.calibration_auto_movement()
             break
     rospy.on_shutdown(c.process)

@@ -12,8 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   message_generation
-  dynamixel_workbench_controllers
-  dynamixel_workbench_msgs
+  dynamixel_controllers
 )
 
 ## Generate messages in the 'msg' folder
@@ -21,7 +20,6 @@ add_message_files(
    FILES
    GaitEvent.msg
    GaitPhase.msg
-   MotorsInfo.msg
    Insole.msg
    IMUData.msg
 )
