@@ -33,6 +33,8 @@ class Controller(object):
         # self.command = rospy.Publisher("/goal_dynamixel_position", GoalPosition, queue_size = 1, latch = False)
         self.kill = rospy.Publisher("/t_flex/kill_gait_assistance", Bool, queue_size = 1, latch = False)
         self.flag = rospy.Subscriber("/t_flex/kill_gait_assistance", Bool, self.updateFlagGaitAssistance)
+        self.frontal_motor_pub = rospy.Publisher("/tilt1_controller/command", Float64, queue_size = 1, latch = False)
+        self.posterior_motor_pub = rospy.Publisher("/tilt2_controller/command", Float64, queue_size = 1, latch = False)
         rospy.Subscriber("/t_flex/gait_phase_detection", GaitPhase, self.updateGaitEvent)
         opts, args = getopt.getopt(sys.argv[1:], "t:", [])
         for opt, arg in opts:
@@ -53,13 +55,25 @@ class Controller(object):
         self.StiffnessValueToPub2 = float(params[1])
         self.program_time = time.time()
         ''' Max Speed '''
-        set_motor_speed(1024)
+        set_motor_speed(10)
 
     def updateFlagGaitAssistance(self,kill_signal):
         if kill_signal.data:
             rospy.logwarn("Killing gait assistance node due to external source")
             release_motors()
             rospy.signal_shutdown("Node was killed by external source.")
+
+    def flexion_movement(self):
+        self.frontal_motor_pub(self.ValueToPubUp1)
+        self.posterior_motor_pub(self.ValueToPubDown2)
+
+    def extension_movement(self):
+        self.frontal_motor_pub(self.ValueToPubDown1)
+        self.posterior_motor_pub(self.ValueToPubUp2)
+
+    def maximum_stiffness(self):
+        self.frontal_motor_pub(self.StiffnessValueToPub1)
+        self.posterior_motor_pub(self.StiffnessValueToPub2)
 
     def updateGaitEvent(self, sensor):
         """Is the given assistance time up?"""
@@ -84,15 +98,15 @@ class Controller(object):
                 rospy.loginfo("Gait Phase: "+self.gait_phases[self.event])
                 ''' Heel Strike '''
                 if self.event == 1:
-                    self.motor_position_command(val_motor1 = self.StiffnessValueToPub1, val_motor2 = self.StiffnessValueToPub2)
+                    self.maximum_stiffness()
                     print("\nPublishing: " + self.gait_phases[self.event] + "\n")
                 ''' Heel Off '''
                 if self.event == 4:
-                    self.motor_position_command(val_motor1 = self.ValueToPubDown1, val_motor2 = self.ValueToPubUp2)
+                    self.extension_movement()
                     print("\nPublishing: " + self.gait_phases[self.event] + "\n")
                 ''' Mid-Swing '''
                 if self.event == 6:
-                    self.motor_position_command(val_motor1 = self.ValueToPubUp1, val_motor2 = self.ValueToPubDown2)
+                    self.flexion_movement()
                     print("\nPublishing: " + self.gait_phases[self.event] + "\n")
                 ''' Invalide state! '''
                 if self.event == 7:
@@ -100,43 +114,30 @@ class Controller(object):
                     # Release the motors if an invalid state was prompted by the gait classifier
                     release_motors()
 
-    def motor_position_command(self, val_motor1 = 0, val_motor2 = 0):
-        #create service handler for motor1
-        service = dmx_firmware.DmxCommandClientService(service_name = '/t_flex_motors/goal_position')
-        service.service_request_threaded(id = 1,val = val_motor1)
-        service.service_request_threaded(id = 2, val = val_motor2)
-
 def release_motors():
-    val = False
-    service = '/t_flex_motors/torque_enable'
-    rospy.wait_for_service(service)
-    try:
-         enable_torque = rospy.ServiceProxy(service, TorqueEnable)
-         ''' Torque Disabled Motor ID 1 '''
-         resp1 = enable_torque(id=1,value=val)
-         time.sleep(0.001)
-         ''' Torque Disabled Motor ID 2 '''
-         resp2 = enable_torque(id=2,value=val)
-         time.sleep(0.001)
-         return (resp1.result & resp2.result)
-    except rospy.ServiceException, e:
-         print "Service call failed: %s"%e
+    value = False
+    type_service = TorqueEnable
+    service_frontal = '/tilt1_controller/torque_enable'
+    service_posterior = '/tilt2_controller/torque_enable'
+    ans = call_service(id_motor=1, service=service_frontal, type=type_service, val = value)
+    ans = call_service(id_motor=2, service=service_posterior, type=type_service, val = value)
 
 def set_motor_speed(speed):
-    val = speed
-    service = '/t_flex_motors/goal_speed'
+    value = speed
+    type_service = SetSpeed
+    service_frontal = '/tilt1_controller/set_speed'
+    service_posterior = '/tilt2_controller/set_speed'
+    ans = call_service(id_motor=1, service=service_frontal, type=type_service, val = value)
+    ans = call_service(id_motor=2, service=service_posterior, type=type_service, val = value)
+
+def call_service(id_motor,service,type,val):
     rospy.wait_for_service(service)
     try:
-         motor_speed = rospy.ServiceProxy(service, JointCommand)
-         ''' Set Speed Motor ID 1 '''
-         resp1 = motor_speed(id=1,value=val)
-         time.sleep(0.001)
-         ''' Set Speed Motor ID 2 '''
-         resp2 = motor_speed(id=2,value=val)
-         time.sleep(0.001)
-         return (resp1.result & resp2.result)
-    except rospy.ServiceException:
-         print ("Service call failed: %s"%e)
+        srv =  rospy.ServiceProxy(service, type)
+        ans = srv(id=id_motor,value=val)
+        return ans.result
+    except rospy.ServiceException, e:
+         rospy.loginfo("Service call failed: %s",%e)
 
 
 def main():

@@ -7,6 +7,21 @@ import time
 import subprocess
 
 class Server(object):
+	def __init__(self):
+		''' Topics Name '''
+		motor_state_topic_frontal = '/motor_states/frontal_tilt_port'
+		motor_state_topic_posterior = '/motor_states/posterior_tilt_port'
+		frontal_command_topic = '/tilt1_controller/command'
+		posterior_command_topic = '/tilt2_controller/command'
+		flag_angle_calibration = '/t_flex/kill_angle_calibration'
+		flag_stiffness_calibration = '/t_flex/kill_stiffness_calibration'
+		flag_therapy = '/t_flex/kill_therapy'
+		gait_phases_detection_topic = '/t_flex/gait_phase_detection'
+		imu_data_topic = '/t_flex/imu_data'
+		flag_gait_assistance = '/t_flex/kill_gait_assistance'
+		flag_speed = '/t_flex/update_speed'
+		flag_enable_device = '/t_flex/enable_device'
+
 	def rostopic_list(self):
 		rostopic_list = subprocess.Popen(['rostopic', 'list',], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		stdout, stderr = rostopic_list.communicate()
@@ -14,13 +29,14 @@ class Server(object):
 
 	def run_dynamixel_controllers(self):
 		topics = self.rostopic_list()
-		if not ('/t_flex_motors/dynamixel_status' in topics):
-			rd =threading.Thread(target=self.launchDynamixelControllers)
+		if not ((motor_state_topic_frontal in topics) and (motor_state_topic_posterior in topics)):
+			rd =threading.Thread(target=self.launchDynamixelController)
 			print("Running Dynamixel Controllers ID's: 1 y 2 , Port: ttyUSB0")
 			rd.start()
 			time.sleep(10)
+			os.system("roslaunch t_flex start_position_controller.launch")
 			topics = self.rostopic_list()
-			if ('/t_flex_motors/dynamixel_status' in topics):
+			if ((motor_state_topic_frontal in topics) and (motor_state_topic_posterior in topics) and (frontal_command_topic in topics) and (posterior_command_topic in topics)):
 				return True, ("Controladores Inicializados")
 			else:
 				return False, ("El controlador no encuentra motores, revise conexiones")
@@ -29,13 +45,13 @@ class Server(object):
 
 	def run_angle_calibration(self):
 		topics = self.rostopic_list()
-		if ('/t_flex_motors/dynamixel_status' in topics):
-			if not (('/t_flex/kill_angle_calibration' in topics) or ('/t_flex/kill_stiffness_calibration' in topics)):
+		if ((motor_state_topic_frontal in topics) and (motor_state_topic_posterior in topics)):
+			if not ((flag_angle_calibration in topics) or (flag_stiffness_calibration in topics)):
 				ac = threading.Thread(target=self.runAngleCalibration)
 				ac.start()
 				time.sleep(5)
 				topics = self.rostopic_list()
-				if ('/t_flex/kill_angle_calibration' in topics):
+				if (flag_angle_calibration in topics):
 					return True, ("Calibración de Ángulo Iniciada")
 				else:
 					return False, ("No se pudo iniciar calibración, intente de nuevo")
@@ -46,13 +62,13 @@ class Server(object):
 
 	def run_stiffness_calibration(self):
 		topics = self.rostopic_list()
-		if ('/t_flex_motors/dynamixel_status' in topics):
-			if not (('/t_flex/kill_angle_calibration' in topics) or ('/t_flex/kill_stiffness_calibration' in topics)):
+		if ((motor_state_topic_frontal in topics) and (motor_state_topic_posterior in topics)):
+			if not ((flag_angle_calibration in topics) or (flag_stiffness_calibration in topics)):
 				sc = threading.Thread(target=self.runStiffnessCalibration)
 				sc.start()
 				time.sleep(5)
 				topics = self.rostopic_list()
-				if ('/t_flex/kill_stiffness_calibration' in topics):
+				if (flag_stiffness_calibration in topics):
 					return True, ("Calibración de Rigidez Iniciada")
 				else:
 					return False, ("No se pudo iniciar calibración, intente de nuevo")
@@ -63,7 +79,7 @@ class Server(object):
 
 	def stop_angle_calibration(self):
 		topics = self.rostopic_list()
-		if ('/t_flex/kill_angle_calibration' in topics):
+		if (flag_angle_calibration in topics):
 			os.system("rostopic pub -1 /t_flex/kill_angle_calibration std_msgs/Bool True")
 			time.sleep(1)
 			return True, ("Calibración de Ángulo Detenida")
@@ -72,7 +88,7 @@ class Server(object):
 
 	def stop_stiffness_calibration(self):
 		topics = self.rostopic_list()
-		if ('/t_flex/kill_stiffness_calibration' in topics):
+		if (flag_stiffness_calibration in topics):
 			os.system("rostopic pub -1 /t_flex/kill_stiffness_calibration std_msgs/Bool True")
 			time.sleep(1)
 			return True, ("Calibración de Rigidez Detenida")
@@ -81,13 +97,13 @@ class Server(object):
 
 	def start_therapy(self,repetitions,frequency,velocity):
 		topics = self.rostopic_list()
-		if ('/t_flex_motors/dynamixel_status' in topics):
-			if not (('/t_flex/kill_therapy' in topics) or ('/t_flex/gait_phase_detection' in topics) or ('/t_flex/imu_data' in topics)):
+		if ((motor_state_topic_frontal in topics) and (motor_state_topic_posterior in topics)):
+			if not ((flag_therapy in topics) or (gait_phases_detection_topic in topics) or (imu_data_topic in topics)):
 				st = threading.Thread(target=self.runTherapy, args=(repetitions, frequency, velocity))
 				st.start()
 				time.sleep(3)
 				topics = self.rostopic_list()
-				if ('/t_flex/kill_therapy' in topics):
+				if (flag_therapy in topics):
 					return True, ("Terapia Iniciada")
 				else:
 					return False, ("No se pudo iniciar terapia, Iintente nuevamente")
@@ -98,7 +114,7 @@ class Server(object):
 
 	def stop_therapy(self):
 		topics = self.rostopic_list()
-		if ('/t_flex/kill_therapy' in topics):
+		if (flag_therapy in topics):
 			os.system("rostopic pub -1 /t_flex/kill_therapy std_msgs/Bool True")
 			time.sleep(2)
 			return True, ("Terapia Detenida")
@@ -107,14 +123,14 @@ class Server(object):
 
 	def start_assistance(self,time_assistance):
 		topics = self.rostopic_list()
-		if ('/t_flex_motors/dynamixel_status' in topics):
-			if not (('/t_flex/kill_therapy' in topics) or ('/t_flex/gait_phase_detection' in topics) or ('/t_flex/imu_data' in topics)):
+		if ((motor_state_topic_frontal in topics) and (motor_state_topic_posterior in topics)):
+			if not ((flag_therapy in topics) or (gait_phases_detection_topic in topics) or (imu_data_topic in topics)):
 				print type(time_assistance)
 				st = threading.Thread(target=self.launchAssistance, args=(time_assistance))
 				st.start()
 				time.sleep(8)
 				topics = self.rostopic_list()
-				if ('/t_flex/kill_gait_assistance' in topics) and ('/t_flex/gait_phase_detection' in topics) and ('/t_flex/imu_data' in topics):
+				if (flag_gait_assistance in topics) and (gait_phases_detection_topic in topics) and (imu_data_topic in topics):
 					return True, ("Asistencia Iniciada")
 				else:
 					return False, ("No se pudo iniciar asistencia, Intente nuevamente")
@@ -125,7 +141,7 @@ class Server(object):
 
 	def stop_assistance(self):
 		topics = self.rostopic_list()
-		if ('/t_flex/kill_gait_assistance' in topics) and ('/t_flex/gait_phase_detection' in topics) and ('/t_flex/imu_data' in topics):
+		if (flag_gait_assistance in topics) and (gait_phases_detection_topic in topics) and (imu_data_topic in topics):
 			os.system("rostopic pub -1 /t_flex/kill_gait_assistance std_msgs/Bool True")
 			time.sleep(3)
 			return True, ("Terapia Detenida")
@@ -152,17 +168,17 @@ class Server(object):
 			else:
 				return False, ("El servidor ya esta ejecutandose")
 		else:
-			return False, ("roscore no está corriendo, active los motores antes de abrir el puerto")
+			return False, ("Roscore no está corriendo, active los motores antes de abrir el puerto")
 
 	def start_therapy_bci(self):
 		topics = self.rostopic_list()
-		if ('/t_flex_motors/dynamixel_status' in topics):
-			if not (('/t_flex/kill_therapy' in topics) or ('/t_flex/gait_phase_detection' in topics) or ('/t_flex/imu_data' in topics)):
+		if ((motor_state_topic_frontal in topics) and (motor_state_topic_posterior in topics)):
+			if not ((flag_therapy in topics) or (gait_phases_detection_topic in topics) or (imu_data_topic in topics)):
 				st_bci = threading.Thread(target=self.runTherapyBCI)
 				st_bci.start()
 				time.sleep(3)
 				topics = self.rostopic_list()
-				if (('/t_flex/kill_therapy' in topics) and ('/t_flex/update_speed' in topics) and ('/t_flex/enable_device' in topics)):
+				if ((flag_therapy in topics) and (flag_speedin topics) and (flag_enable_device in topics)):
 					return True, ("Terapia Iniciada")
 				else:
 					return False, ("No se pudo iniciar terapia, Iintente nuevamente")
@@ -189,8 +205,9 @@ class Server(object):
 			return False, ("No estan corriendo procesos en ROS")
 
 	''' Threadings '''
-	def launchDynamixelControllers(self):
+	def launchDynamixelController(self):
 		os.system("sudo chmod 777 /dev/ttyUSB0")
+		os.system("sudo chmod 777 /dev/ttyUSB1")
 		os.system("roslaunch t_flex dynamixel_controllers.launch")
 
 	def runAngleCalibration(self):
