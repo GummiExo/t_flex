@@ -40,8 +40,8 @@ class Server(object):
 				os.system("roslaunch t_flex start_position_controller.launch")
 				time.sleep(7)
 				topics = self.rostopic_list()
-					if ((self.motor_state_topic_frontal in topics) and (self.motor_state_topic_posterior in topics) and (self.frontal_command_topic in topics) and (self.posterior_command_topic in topics)):
-						return True, ("Controladores Inicializados")
+				if ((self.motor_state_topic_frontal in topics) and (self.motor_state_topic_posterior in topics) and (self.frontal_command_topic in topics) and (self.posterior_command_topic in topics)):
+					return True, ("Controladores Inicializados")
 			else:
 				return False, ("El controlador no encuentra motores, revise conexiones")
 		else:
