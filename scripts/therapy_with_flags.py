@@ -51,11 +51,11 @@ class Controller(object):
         while not self.kill_therapy:
             if self.enable:
                 ''' Publisher Motor ID 1 and Motor ID 2'''
-                self.frontal_motor_pub(self.ValueToPubUp1)
-                self.posterior_motor_pub(self.ValueToPubDown2)
+                self.frontal_motor_pub.publish(self.ValueToPubUp1)
+                self.posterior_motor_pub.publish(self.ValueToPubDown2)
                 time.sleep(1/self.frecuency)
-                self.frontal_motor_pub(self.ValueToPubDown1)
-                self.posterior_motor_pub(self.ValueToPubUp2)
+                self.frontal_motor_pub.publish(self.ValueToPubDown1)
+                self.posterior_motor_pub.publish(self.ValueToPubUp2)
                 time.sleep(1/self.frecuency)
                 self.disabled = False
             else:
@@ -73,25 +73,25 @@ def release_motors():
     type_service = TorqueEnable
     service_frontal = '/tilt1_controller/torque_enable'
     service_posterior = '/tilt2_controller/torque_enable'
-    ans = call_service(id_motor=1, service=service_frontal, type=type_service, val = value)
-    ans = call_service(id_motor=2, service=service_posterior, type=type_service, val = value)
+    ans = call_service(service=service_frontal, type=type_service, val = value)
+    ans = call_service(service=service_posterior, type=type_service, val = value)
 
 def set_motor_speed(speed):
     value = speed
     type_service = SetSpeed
     service_frontal = '/tilt1_controller/set_speed'
     service_posterior = '/tilt2_controller/set_speed'
-    ans = call_service(id_motor=1, service=service_frontal, type=type_service, val = value)
-    ans = call_service(id_motor=2, service=service_posterior, type=type_service, val = value)
+    ans = call_service(service=service_frontal, type=type_service, val = value)
+    ans = call_service(service=service_posterior, type=type_service, val = value)
 
-def call_service(id_motor,service,type,val):
+def call_service(service,type,val):
     rospy.wait_for_service(service)
     try:
         srv =  rospy.ServiceProxy(service, type)
-        ans = srv(id=id_motor,value=val)
-        return ans.result
+        ans = srv(val)
+        return ans
     except rospy.ServiceException, e:
-         rospy.loginfo("Service call failed: %s",%e)
+         rospy.loginfo("Service call failed: %s"%e)
 
 def main():
     c = Controller()
