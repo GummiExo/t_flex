@@ -31,13 +31,17 @@ class Server(object):
 		topics = self.rostopic_list()
 		if not ((self.motor_state_topic_frontal in topics) and (self.motor_state_topic_posterior in topics)):
 			rd =threading.Thread(target=self.launchDynamixelController)
-			print("Running Dynamixel Controllers ID's: 1 y 2 , Port: ttyUSB0")
+			print("Running Dynamixel Controllers ID's: 1 and 2 , Port: ttyUSB0 and ttyUSB1")
 			rd.start()
 			time.sleep(10)
-			os.system("roslaunch t_flex start_position_controller.launch")
 			topics = self.rostopic_list()
-			if ((self.motor_state_topic_frontal in topics) and (self.motor_state_topic_posterior in topics) and (self.frontal_command_topic in topics) and (self.posterior_command_topic in topics)):
-				return True, ("Controladores Inicializados")
+			if ((self.motor_state_topic_frontal in topics) and (self.motor_state_topic_posterior in topics)):
+				print("Motores Found, starting position controller...")
+				os.system("roslaunch t_flex start_position_controller.launch")
+				time.sleep(7)
+				topics = self.rostopic_list()
+					if ((self.motor_state_topic_frontal in topics) and (self.motor_state_topic_posterior in topics) and (self.frontal_command_topic in topics) and (self.posterior_command_topic in topics)):
+						return True, ("Controladores Inicializados")
 			else:
 				return False, ("El controlador no encuentra motores, revise conexiones")
 		else:
@@ -208,7 +212,7 @@ class Server(object):
 	def launchDynamixelController(self):
 		os.system("sudo chmod 777 /dev/ttyUSB0")
 		os.system("sudo chmod 777 /dev/ttyUSB1")
-		os.system("roslaunch t_flex dynamixel_controllers.launch")
+		os.system("roslaunch t_flex dynamixel_controller.launch")
 
 	def runAngleCalibration(self):
 		os.system("rosrun t_flex angle_calibration.py")
