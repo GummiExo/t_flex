@@ -22,6 +22,8 @@ class Server(object):
 		self.flag_speed = '/t_flex/update_speed'
 		self.flag_enable_device = '/t_flex/enable_device'
 
+		self.imu_address = '0x29'
+
 	def rostopic_list(self):
 		rostopic_list = subprocess.Popen(['rostopic', 'list',], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		stdout, stderr = rostopic_list.communicate()
@@ -33,7 +35,7 @@ class Server(object):
 			rd =threading.Thread(target=self.launchDynamixelController)
 			print("Running Dynamixel Controllers ID's: 1 and 2 , Port: ttyUSB0 and ttyUSB1")
 			rd.start()
-			time.sleep(10)
+			time.sleep(20)
 			topics = self.rostopic_list()
 			if ((self.motor_state_topic_frontal in topics) and (self.motor_state_topic_posterior in topics)):
 				print("Motores Found, starting position controller...")
@@ -128,18 +130,28 @@ class Server(object):
 	def start_assistance(self,time_assistance):
 		topics = self.rostopic_list()
 		if ((self.motor_state_topic_frontal in topics) and (self.motor_state_topic_posterior in topics)):
-			if not ((self.flag_therapy in topics) or (self.gait_phases_detection_topic in topics) or (self.imu_data_topic in topics)):
-				print type(time_assistance)
-				st = threading.Thread(target=self.launchAssistance, args=(time_assistance))
-				st.start()
-				time.sleep(8)
-				topics = self.rostopic_list()
-				if (self.flag_gait_assistance in topics) and (self.gait_phases_detection_topic in topics) and (self.imu_data_topic in topics):
-					return True, ("Asistencia Iniciada")
+			i2c_bus = subprocess.Popen(['i2cdetect', '-y', '3',], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			stdout, stderr = i2c_bus.communicate()
+			devices_connected = stdout
+			# value == 1
+			#if (self.imu_address in devices_connected):
+			if True:
+				if not ((self.flag_therapy in topics) or (self.gait_phases_detection_topic in topics) or (self.imu_data_topic in topics)):
+					print type(time_assistance)
+					st = threading.Thread(target=self.launchAssistance, args=(time_assistance))
+					st.start()
+					time.sleep(8)
+					topics = self.rostopic_list()
+					if ((self.flag_gait_assistance in topics) and (self.gait_phases_detection_topic in topics) and (self.imu_data_topic in topics)):
+						return True, ("Asistencia Iniciada")
+					else:
+						os.system("rostopic pub -1 /t_flex/kill_gait_assistance std_msgs/Bool True")
+						time.sleep(4)
+						return False, ("No se pudo iniciar asistencia, Intente nuevamente")
 				else:
-					return False, ("No se pudo iniciar asistencia, Intente nuevamente")
+					return False, ("Se está ejecutando uno de los modos de operación")
 			else:
-				return False, ("Se está ejecutando uno de los modos de operación")
+				return False, ("No se encuentra conectada la IMU")
 		else:
 			return False, ("Los motores no se encuentran activados")
 
@@ -207,6 +219,9 @@ class Server(object):
 			return True, ("Todos los procesos han finalizado")
 		else:
 			return False, ("No estan corriendo procesos en ROS")
+
+	def shutdown(self):
+		os.system("sudo shutdown now")
 
 	''' Threadings '''
 	def launchDynamixelController(self):

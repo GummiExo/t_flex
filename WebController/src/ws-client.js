@@ -136,4 +136,8 @@ $(document).ready(function(){
         alert('Cerrando Procesos Activos');
         ws.send('exit')
     });
+    $("#shutdown").click(function(){
+        alert('Apagando la Raspberry por favor espere hasta que el botón verde no se encienda');
+        ws.send('shutdown')
+    });
 });

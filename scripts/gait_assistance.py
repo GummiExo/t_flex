@@ -4,11 +4,9 @@
 import sys, getopt
 import rospy
 import time
-import dmx_firmware
-from dynamixel_workbench_msgs.msg import DynamixelStatusList
-from dynamixel_workbench_msgs.srv import JointCommand, TorqueEnable
+from dynamixel_controllers.srv import SetSpeed, TorqueEnable
 from t_flex.msg import GaitPhase
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Float64
 import threading
 import logging
 import os

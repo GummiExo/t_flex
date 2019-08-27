@@ -96,6 +96,8 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 			is_done, msg = Server().close_terminal()
 		elif command == 'exit':
 			is_done, msg = Server().exit()
+		elif command == 'shutdown':
+			is_done, msg = Server().shutdown()
 		else:
 			print ("Error: Unknown command")
 		try:
