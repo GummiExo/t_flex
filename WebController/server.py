@@ -5,6 +5,7 @@ import os
 import threading
 import time
 import subprocess
+import datetime
 
 class Server(object):
 	def __init__(self):
@@ -16,17 +17,25 @@ class Server(object):
 		self.flag_angle_calibration = '/t_flex/kill_angle_calibration'
 		self.flag_stiffness_calibration = '/t_flex/kill_stiffness_calibration'
 		self.flag_therapy = '/t_flex/kill_therapy'
-		self.gait_phases_detection_topic = '/t_flex/gait_phase_detection'
-		self.imu_data_topic = '/t_flex/imu_data'
-		self.flag_gait_assistance = '/t_flex/kill_gait_assistance'
+		self.gait_phases_detection_topic = '/gait_phase_detection'
+		self.imu_data_topic = '/imu_data'
+		self.flag_gait_assistance = '/kill_gait_assistance'
 		self.flag_speed = '/t_flex/update_speed'
 		self.flag_enable_device = '/t_flex/enable_device'
-
-		self.imu_address = '0x29'
+		''' Nodes Name '''
+		self.gait_assistance_node = '/gait_assistance'
+		self.gait_phases_detection_node = '/threshold_gait_detection_node'
+		''' Others '''
+		self.imu_address = '29'
 
 	def rostopic_list(self):
 		rostopic_list = subprocess.Popen(['rostopic', 'list',], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		stdout, stderr = rostopic_list.communicate()
+		return stdout
+
+	def rosnode_list(self):
+		rosnode_list = subprocess.Popen(['rosnode', 'list',], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		stdout, stderr = rosnode_list.communicate()
 		return stdout
 
 	def run_dynamixel_controllers(self):
@@ -127,25 +136,30 @@ class Server(object):
 		else:
 			return False, ("No se esta ejecutando el modo de terapia")
 
-	def start_assistance(self,time_assistance):
+	def start_assistance(self,time_assistance,patient_name):
 		topics = self.rostopic_list()
-		if ((self.motor_state_topic_frontal in topics) and (self.motor_state_topic_posterior in topics)):
+		#if ((self.motor_state_topic_frontal in topics) and (self.motor_state_topic_posterior in topics)):
+		if True:
 			i2c_bus = subprocess.Popen(['i2cdetect', '-y', '3',], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			stdout, stderr = i2c_bus.communicate()
 			devices_connected = stdout
-			# value == 1
-			#if (self.imu_address in devices_connected):
-			if True:
-				if not ((self.flag_therapy in topics) or (self.gait_phases_detection_topic in topics) or (self.imu_data_topic in topics)):
-					print type(time_assistance)
-					st = threading.Thread(target=self.launchAssistance, args=(time_assistance))
-					st.start()
-					time.sleep(8)
-					topics = self.rostopic_list()
-					if ((self.flag_gait_assistance in topics) and (self.gait_phases_detection_topic in topics) and (self.imu_data_topic in topics)):
-						return True, ("Asistencia Iniciada")
+			if (self.imu_address in devices_connected):
+				#if not ((self.flag_therapy in topics) or (self.gait_phases_detection_topic in topics) or (self.imu_data_topic in topics)):
+				if not ((self.flag_gait_assistance in topics)):
+					#st = threading.Thread(target=self.launchAssistance, args=(time_assistance))
+					#st.start()
+					#time.sleep(8)
+					#topics = self.rostopic_list()
+					#if ((self.flag_gait_assistance in topics) and (self.gait_phases_detection_topic in topics) and (self.imu_data_topic in topics)):
+					if True:
+						date = datetime.datetime.now()
+						record = threading.Thread(target=self.recordAssistance, args=(patient_name, date))
+						record.start()
+						#kill_record = threading.Thread(target=self.killRecordDetection)
+						#kill_record.start()
+						return True, ("Asistencia Iniciada - Grabando datos de " + patient_name)
 					else:
-						os.system("rostopic pub -1 /t_flex/kill_gait_assistance std_msgs/Bool True")
+						os.system("rostopic pub -1 /kill_gait_assistance std_msgs/Bool True")
 						time.sleep(4)
 						return False, ("No se pudo iniciar asistencia, Intente nuevamente")
 				else:
@@ -158,7 +172,8 @@ class Server(object):
 	def stop_assistance(self):
 		topics = self.rostopic_list()
 		if (self.flag_gait_assistance in topics) and (self.gait_phases_detection_topic in topics) and (self.imu_data_topic in topics):
-			os.system("rostopic pub -1 /t_flex/kill_gait_assistance std_msgs/Bool True")
+			os.system("rostopic pub -1 /kill_gait_assistance std_msgs/Bool True")
+			os.system("rosnode kill /threshold_gait_detection_node")
 			time.sleep(3)
 			return True, ("Terapia Detenida")
 		else:
@@ -240,6 +255,23 @@ class Server(object):
 
 	def launchAssistance(self,*time_assistance):
 		os.system("roslaunch t_flex gait_assistance.launch time:=" + str("".join(time_assistance)))
+
+	def recordAssistance(self,patient,date):
+		home = os.path.expanduser('~/bags')
+		os.chdir(home)
+		os.system("rosbag record -a -O " + patient + "_" + str(date.year) + "_" + str(date.month) + "_" + str(date.day) + "_" + str(date.hour) + "_" + str(date.minute) + "_" + str(date.second)	)
+
+	def killRecordDetection(self):
+		while True:
+			nodes = self.rosnode_list()
+			if not (self.gait_assistance_node in nodes):
+				os.system("rosnode kill /threshold_gait_detection_node")
+				initial_pos = nodes.find('/record')
+				final_pos = initial_pos + nodes[initial_pos::].find('\n')
+				os.system("rosnode kill " + nodes[initial_pos:final_pos])
+				break;
+			else:
+				time.sleep(0.5)
 
 	def runUDPServer(self,*port):
 		os.system("rosrun t_flex udp_listener.py -h 192.168.4.1 -p 3014")

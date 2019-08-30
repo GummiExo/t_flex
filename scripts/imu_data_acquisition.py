@@ -78,14 +78,16 @@ class IMU_BNO055:
         time.sleep(0.025)
 
         # ROS Node Initialization
-        self.node_name = 'imu_data_acquisition2'
+        self.node_name = 'imu_data_acquisition'
         rospy.init_node(self.node_name, anonymous = True)
         self.pub = rospy.Publisher("/imu_data", IMUData, queue_size = 1, latch = False)
-        rospy.Subscriber("kill_gait_assistance", Bool, self.updateFlagImuAcquisition)
+        rospy.Subscriber("/kill_gait_assistance", Bool, self.updateFlagImuAcquisition)
         self.kill_flag = False
 
     def updateFlagImuAcquisition(self,flag_signal):
         self.kill_flag = flag_signal.data
+        if self.kill_flag:
+            rospy.logwarn("Killing IMU node due to external source")
 
     # def find_filter_params(self):
     #     """Find the necessary parameters for the Butterworth low-pass filter.

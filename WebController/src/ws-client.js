@@ -85,10 +85,20 @@ $(document).ready(function(){
     });
     // Assistance Mode
     $("#start_assistance").click(function(){
+        var patient_name = document.getElementById('patient_name')
+        var name = patient_name.value;
         var time_assistance = document.getElementById('time_assistance');
         var time = time_assistance.value;
-        ws.send("start_assistance " + time)
-        alert('Iniciando Asistencia\nTiempo: ' + time)
+        var selector = document.getElementById('selector_assistance');
+        var value = selector[selector.selectedIndex].value;
+        if (value == 'assistance') {
+            ws.send("start_assistance " + name + " " + time)
+            alert('Iniciando Asistencia para ' + name + '\nTiempo: ' + time)
+        }
+        else if (value == 'training') {
+            ws.send("train_model");
+            alert('Iniciando Entrenamiento del Modelo para')
+        }
     });
     $("#stop_assistance").click(function(){
         ws.send("stop_assistance")

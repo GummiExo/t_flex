@@ -29,11 +29,11 @@ class Controller(object):
         rospy.loginfo("----------------------- ASSISTANT STARTED -----------------------")
         rospy.init_node('t_flex_gait_assistance', anonymous = True)
         # self.command = rospy.Publisher("/goal_dynamixel_position", GoalPosition, queue_size = 1, latch = False)
-        self.kill = rospy.Publisher("/t_flex/kill_gait_assistance", Bool, queue_size = 1, latch = False)
-        self.flag = rospy.Subscriber("/t_flex/kill_gait_assistance", Bool, self.updateFlagGaitAssistance)
+        self.kill = rospy.Publisher("/kill_gait_assistance", Bool, queue_size = 1, latch = False)
+        self.flag = rospy.Subscriber("/kill_gait_assistance", Bool, self.updateFlagGaitAssistance)
         self.frontal_motor_pub = rospy.Publisher("/tilt1_controller/command", Float64, queue_size = 1, latch = False)
         self.posterior_motor_pub = rospy.Publisher("/tilt2_controller/command", Float64, queue_size = 1, latch = False)
-        rospy.Subscriber("/t_flex/gait_phase_detection", GaitPhase, self.updateGaitEvent)
+        rospy.Subscriber("/gait_phase_detection", GaitPhase, self.updateGaitEvent)
         opts, args = getopt.getopt(sys.argv[1:], "t:", [])
         for opt, arg in opts:
             if opt == "-t":
@@ -58,7 +58,7 @@ class Controller(object):
     def updateFlagGaitAssistance(self,kill_signal):
         if kill_signal.data:
             rospy.logwarn("Killing gait assistance node due to external source")
-            release_motors()
+            #release_motors()
             rospy.signal_shutdown("Node was killed by external source.")
 
     def flexion_movement(self):
@@ -79,7 +79,7 @@ class Controller(object):
         if time.time() - self.program_time > self.time:
             rospy.logwarn("Assistance time is up.")
             # rospy.logwarn("Releasing motors...")
-            release_motors()
+            #release_motors()
             kill_msg = Bool()
             kill_msg.data = True
             rospy.logwarn("Killing further nodes of gait assistance...")
@@ -88,7 +88,7 @@ class Controller(object):
         else:
             # Release motors if more than 1.5 seconds have passed between gait phases (No detection)
             if time.time() - self.start_time > 1.5:
-                release_motors()
+                #release_motors()
                 self.start_time = time.time()
             if sensor.phase != self.event:
                 self.start_time = time.time()

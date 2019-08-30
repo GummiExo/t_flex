@@ -81,9 +81,17 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 		elif command == 'stop_therapy':
 			is_done, msg = Server().stop_therapy()
 		elif command == 'start_assistance':
-			time_assistance = args
-			print ("Received Args: Time = " + time_assistance)
-			is_done, msg = Server().start_assistance(time_assistance = time_assistance)
+			args = args.split(' ')
+			args = list(map(str,args))
+			patient_name = ''
+			for i in range (0,len(args)-2):
+				if i == 0:
+					patient_name = patient_name + args[0]
+				else:
+					patient_name = patient_name + '_' + args[i]
+			time_assistance = args[-1]
+			print ("Received Args: Patient: " + patient_name + " ,Time = " + time_assistance)
+			is_done, msg = Server().start_assistance(time_assistance = time_assistance, patient_name = patient_name)
 		elif command == 'open_port':
 			is_done, msg = Server().open_port()
 		elif command == 'stop_assistance':
