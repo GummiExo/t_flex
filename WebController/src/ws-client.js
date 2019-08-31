@@ -89,13 +89,21 @@ $(document).ready(function(){
         var name = patient_name.value;
         var time_assistance = document.getElementById('time_assistance');
         var time = time_assistance.value;
-        var selector = document.getElementById('selector_assistance');
-        var value = selector[selector.selectedIndex].value;
-        if (value == 'assistance') {
-            ws.send("start_assistance " + name + " " + time)
-            alert('Iniciando Asistencia para ' + name + '\nTiempo: ' + time)
+        var selector_assistance = document.getElementById('selector_assistance');
+        var value_assistance = selector_assistance[selector_assistance.selectedIndex].value;
+        var selector_algorithm = document.getElementById('selector_algorithm');
+        var value_algorithm = selector_algorithm[selector_algorithm.selectedIndex].value;
+        if (value_assistance == 'assistance') {
+            if (value_algorithm == 'threshold') {
+              ws.send("start_assistance " + name + " threshold " + time)
+              alert('Iniciando Asistencia para ' + name + '\nTiempo: ' + time + '\nModalidad: Umbrales')
+            }
+            else if (value_algorithm == 'machine_learning'){
+              ws.send("start_assistance " + name + " machine_learning " + time)
+              alert('Iniciando Asistencia para ' + name + '\nTiempo: ' + time + '\nModalidad: Machine Learning')
+            }
         }
-        else if (value == 'training') {
+        else if (value_assistance == 'training') {
             ws.send("train_model");
             alert('Iniciando Entrenamiento del Modelo para')
         }

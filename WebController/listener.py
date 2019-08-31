@@ -89,9 +89,13 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 					patient_name = patient_name + args[0]
 				else:
 					patient_name = patient_name + '_' + args[i]
-			time_assistance = args[-1]
-			print ("Received Args: Patient: " + patient_name + " ,Time = " + time_assistance)
-			is_done, msg = Server().start_assistance(time_assistance = time_assistance, patient_name = patient_name)
+			if (('.' in patient_name) or ('/' in patient_name) or ('-' in patient_name)):
+				is_done, msg = False, ("Los caracteres ingresados en el nombre del paciente no son aceptados. \nIngrese nuevamente el nombre")
+			else:
+				time_assistance = args[-1]
+				algorithm = args[-2]
+				print ("Received Args: Patient: " + patient_name + " ,Algorithm = " + algorithm + " ,Time = " + time_assistance)
+				is_done, msg = Server().start_assistance(time_assistance = time_assistance, patient_name = patient_name, algorithm = algorithm)
 		elif command == 'open_port':
 			is_done, msg = Server().open_port()
 		elif command == 'stop_assistance':

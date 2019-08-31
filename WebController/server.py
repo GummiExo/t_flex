@@ -136,27 +136,31 @@ class Server(object):
 		else:
 			return False, ("No se esta ejecutando el modo de terapia")
 
-	def start_assistance(self,time_assistance,patient_name):
+	def start_assistance(self,time_assistance,patient_name,algorithm):
 		topics = self.rostopic_list()
-		#if ((self.motor_state_topic_frontal in topics) and (self.motor_state_topic_posterior in topics)):
-		if True:
+		if ((self.motor_state_topic_frontal in topics) and (self.motor_state_topic_posterior in topics)):
+		#if True:
 			i2c_bus = subprocess.Popen(['i2cdetect', '-y', '3',], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			stdout, stderr = i2c_bus.communicate()
 			devices_connected = stdout
 			if (self.imu_address in devices_connected):
 				#if not ((self.flag_therapy in topics) or (self.gait_phases_detection_topic in topics) or (self.imu_data_topic in topics)):
 				if not ((self.flag_gait_assistance in topics)):
-					#st = threading.Thread(target=self.launchAssistance, args=(time_assistance))
-					#st.start()
-					#time.sleep(8)
-					#topics = self.rostopic_list()
-					#if ((self.flag_gait_assistance in topics) and (self.gait_phases_detection_topic in topics) and (self.imu_data_topic in topics)):
-					if True:
+					if (algorithm == 'threshold'):
+						st = threading.Thread(target=self.launchAssistanceThreshold, args=(time_assistance))
+						st.start()
+					elif (algorithm == 'machine_learning'):
+						st = threading.Thread(target=self.launchAssistanceMachineLearning, args=(time_assistance))
+						st.start()
+					time.sleep(8)
+					topics = self.rostopic_list()
+					if ((self.flag_gait_assistance in topics) and (self.gait_phases_detection_topic in topics) and (self.imu_data_topic in topics)):
+					#if True:
 						date = datetime.datetime.now()
 						record = threading.Thread(target=self.recordAssistance, args=(patient_name, date))
 						record.start()
-						#kill_record = threading.Thread(target=self.killRecordDetection)
-						#kill_record.start()
+						kill_record = threading.Thread(target=self.killRecordDetection)
+						kill_record.start()
 						return True, ("Asistencia Iniciada - Grabando datos de " + patient_name)
 					else:
 						os.system("rostopic pub -1 /kill_gait_assistance std_msgs/Bool True")
@@ -173,7 +177,14 @@ class Server(object):
 		topics = self.rostopic_list()
 		if (self.flag_gait_assistance in topics) and (self.gait_phases_detection_topic in topics) and (self.imu_data_topic in topics):
 			os.system("rostopic pub -1 /kill_gait_assistance std_msgs/Bool True")
-			os.system("rosnode kill /threshold_gait_detection_node")
+			try:
+				os.system("rosnode kill /threshold_gait_detection_node")
+			except:
+				pass
+			try:
+				os.system("rosnode kill /real_time_gait_phase_det")
+			except:
+				pass
 			time.sleep(3)
 			return True, ("Terapia Detenida")
 		else:
@@ -253,8 +264,11 @@ class Server(object):
 	def runTherapy(self,repetitions,frequency,velocity):
 		os.system("rosrun t_flex therapy.py " + repetitions + " " + frequency + " " + velocity)
 
-	def launchAssistance(self,*time_assistance):
-		os.system("roslaunch t_flex gait_assistance.launch time:=" + str("".join(time_assistance)))
+	def launchAssistanceThreshold(self,*time_assistance):
+		os.system("roslaunch t_flex gait_assistance_threshold.launch time:=" + str("".join(time_assistance)))
+
+	def launchAssistanceMachineLearning(self,*time_assistance):
+		os.system("roslaunch t_flex gait_assistance_machine_learning.launch time:=" + str("".join(time_assistance)))
 
 	def recordAssistance(self,patient,date):
 		home = os.path.expanduser('~/bags')
@@ -265,7 +279,14 @@ class Server(object):
 		while True:
 			nodes = self.rosnode_list()
 			if not (self.gait_assistance_node in nodes):
-				os.system("rosnode kill /threshold_gait_detection_node")
+				try:
+					os.system("rosnode kill /threshold_gait_detection_node")
+				except:
+					pass
+				try:
+					os.system("rosnode kill /real_time_gait_phase_det")
+				except:
+					pass
 				initial_pos = nodes.find('/record')
 				final_pos = initial_pos + nodes[initial_pos::].find('\n')
 				os.system("rosnode kill " + nodes[initial_pos:final_pos])
