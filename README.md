@@ -17,8 +17,20 @@ Linux Command to clone the specific repository
   ```
   git clone -b t_flex_france --single-branch https://github.com/gummiexo/t_flex.git
   ```
+  
+Linux command to update the package
+  ```
+  git pull
+  ```
+  The user will be:
+  
+  -> France: Thomasprovot
+  
+  -> Chile: 
+  
+  The password is of your account
 
-Linux Command to push
+Linux Command to upload changes of the repository
   ```
   git add files_modified
   git push
@@ -32,6 +44,16 @@ Clone and compile the following repositories in the catkin_ws:
 
 Dynamixel SDK: https://github.com/ROBOTIS-GIT/DynamixelSDK
 Dynamixel Motors: https://github.com/arebgun/dynamixel_motor
+
+## Complete image with Raspbian, ROS and all configurations
+
+This image contains Raspbian Buster, ROS melodic, T-FLEX package compiled and the Raspberry is configured as a router. Additionally, the Web server is running by default (To stop the server, in the .bashrc file comment the line *python listener.py*, and execute *sudo reboot*). The default version of the web server is in spanish.
+
+https://1drv.ms/u/s!Anv-5biOmdEOg5ZucG99Rkr72anpMA?e=ThNdRo
+
+BalenaEtcher is recommended to copy the image into the SD Card (https://www.balena.io/etcher/). 
+
+The T-FLEX package compiled in this image is the France branch, if you are other branch, please remove the package in the catkin_ws, download the correct branch and compile it
 
 ## Configuration of Dynamixel Motors
 
@@ -55,9 +77,26 @@ Dynamixel Motors: https://github.com/arebgun/dynamixel_motor
   
   (**these values must guarantee that the hinge set does not have contact with the motor or the actuation support system**)
   
+ ## Configuration of i2c Bus for the IMU
+ 
+ Execute the command:
+ ```
+ sudo nano /boot/config.txt 
+ ```
+ At the end of this file add the following:
+ ```
+ dtoverlay=i2c-gpio,i2c_gpio_sda=23,i2c_gpio_scl=24
+ ```
+ Close, save changes and reboot the raspberry. Then, connect the IMU and verify the connection of this device using the command:
+ ```
+ i2cdetect -y 3
+ ```
+ This command must show the address of the IMU, which is 29
+ 
+  
  ## Configuration of Raspberry Pi as a router
  
- Follow this tutorial to enable the raspberry pi as a router:
+ Follow this tutorial to enable the raspberry pi as a router (If you downloaded the t-flex image, you do not need to follow this tutorial.):
   
   ```
   sudo apt-get update
