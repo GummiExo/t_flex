@@ -206,7 +206,7 @@ Dynamixel Motors: https://github.com/arebgun/dynamixel_motor
   sudo update-rc.d isc-dhcp-server enable
   sudo reboot
   ```
-  In this point, the Wifi Network already has been created. You sould see it in your smart device
+  In this point, the Wifi Network has already been created. You should see it on your smart device
    
  ## Configuration of Web Application
  
