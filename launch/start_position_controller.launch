@@ -9,8 +9,8 @@
                 tilt1_controller"
                 output="screen"/>
     <node name="tilt_controller_spawner_posterior" pkg="dynamixel_controllers" type="controller_spawner.py"
-          args="--manager=posterior_motor
-                --port posterior_tilt_port
+          args="--manager=frontal_motor
+                --port frontal_tilt_port
                 tilt2_controller"
                 output="screen"/>
 </launch>
