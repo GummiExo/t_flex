@@ -78,14 +78,16 @@ class IMU_BNO055:
         time.sleep(0.025)
 
         # ROS Node Initialization
-        self.node_name = 'imu_data_acquisition2'
+        self.node_name = 'imu_data_acquisition'
         rospy.init_node(self.node_name, anonymous = True)
         self.pub = rospy.Publisher("/imu_data", IMUData, queue_size = 1, latch = False)
-        rospy.Subscriber("kill_gait_assistance", Bool, self.updateFlagImuAcquisition)
+        rospy.Subscriber("/kill_gait_assistance", Bool, self.updateFlagImuAcquisition)
         self.kill_flag = False
 
     def updateFlagImuAcquisition(self,flag_signal):
         self.kill_flag = flag_signal.data
+        if self.kill_flag:
+            rospy.logwarn("Killing IMU node due to external source")
 
     # def find_filter_params(self):
     #     """Find the necessary parameters for the Butterworth low-pass filter.
@@ -503,52 +505,55 @@ def main():
 
     while not rospy.is_shutdown():
         if not sensor.kill_flag:
-            # Read the Euler angles for heading, roll, pitch (all in degrees).
-            # sensor.read_eul()
-            # Read the calibration status, 0=uncalibrated and 3=fully calibrated.
-            # sys, gyro, accel, mag = sensor.read_calib()
-            # Other values you can optionally read:
-            # Orientation as a quaternion:
-            sensor.read_quat()
-            # Sensor temperature in degrees Celsius:
-            #temp_c = sensor.read_temper()
-            # Magnetometer data (in micro-Teslas):
-            #x,y,z = sensor.read_mag()
-            # Gyroscope data (in degrees per second):
-            sensor.read_gyro()
-            # Accelerometer data (in meters per second squared):
-            sensor.read_accel()
-            # Linear acceleration data (i.e. acceleration from movement, not gravity--
-            # returned in meters per second squared):
-            #x,y,z = sensor.read_lin_accel()
-            # Gravity acceleration data (i.e. acceleration just from gravity--returned
-            # in meters per second squared):
-            #x,y,z = sensor.read_grav()
-            # Print everything out.
-            # print('time_stamp={}\t gyro_X={:.2f} gyro_Y={:.2f} gyro_Z={:.2f}\n\t accel_X={:.2f} accel_Y={:.2f} accel_Z={:.2f}'.format(
-            #     rospy.get_rostime().nsecs, sensor.gyro['x'], sensor.gyro['y'], sensor.gyro['z'], sensor.accel['x'], sensor.accel['y'], sensor.accel['z']))
-            # time.sleep(1)
+            try:
+                # Read the Euler angles for heading, roll, pitch (all in degrees).
+                # sensor.read_eul()
+                # Read the calibration status, 0=uncalibrated and 3=fully calibrated.
+                # sys, gyro, accel, mag = sensor.read_calib()
+                # Other values you can optionally read:
+                # Orientation as a quaternion:
+                sensor.read_quat()
+                # Sensor temperature in degrees Celsius:
+                #temp_c = sensor.read_temper()
+                # Magnetometer data (in micro-Teslas):
+                #x,y,z = sensor.read_mag()
+                # Gyroscope data (in degrees per second):
+                sensor.read_gyro()
+                # Accelerometer data (in meters per second squared):
+                sensor.read_accel()
+                # Linear acceleration data (i.e. acceleration from movement, not gravity--
+                # returned in meters per second squared):
+                #x,y,z = sensor.read_lin_accel()
+                # Gravity acceleration data (i.e. acceleration just from gravity--returned
+                # in meters per second squared):
+                #x,y,z = sensor.read_grav()
+                # Print everything out.
+                # print('time_stamp={}\t gyro_X={:.2f} gyro_Y={:.2f} gyro_Z={:.2f}\n\t accel_X={:.2f} accel_Y={:.2f} accel_Z={:.2f}'.format(
+                #     rospy.get_rostime().nsecs, sensor.gyro['x'], sensor.gyro['y'], sensor.gyro['z'], sensor.accel['x'], sensor.accel['y'], sensor.accel['z']))
+                # time.sleep(1)
 
-            # # Computing angular difference in respect of initial calibration angle (pitch frame)
-            # knee_angle = abs(sensor.cal_angle - sensor.euler['y'])
+                # # Computing angular difference in respect of initial calibration angle (pitch frame)
+                # knee_angle = abs(sensor.cal_angle - sensor.euler['y'])
 
-            # Transmission of ROS message
-            msg.header.frame_id = "/" + sensor.node_name
-            msg.time_stamp = int(round((time.time() - start_time)*1000.0))
-            msg.gyro_x = sensor.gyro['x']
-            # msg.gyro_y = sensor.gyro['y'][-1]
-            msg.gyro_y = sensor.gyro['y']
-            msg.gyro_z = sensor.gyro['z']
-            msg.accel_x = sensor.accel['x']
-            # msg.accel_y = sensor.accel['y'][-1]
-            msg.accel_y = sensor.accel['y']
-            msg.accel_z = sensor.accel['z']
-            msg.quat_x = sensor.quat['x']
-            msg.quat_y = sensor.quat['y']
-            msg.quat_z = sensor.quat['z']
-            msg.quat_w = sensor.quat['w']
-            # msg.angle = knee_angle
-            sensor.pub.publish(msg)
+                # Transmission of ROS message
+                msg.header.frame_id = "/" + sensor.node_name
+                msg.time_stamp = int(round((time.time() - start_time)*1000.0))
+                msg.gyro_x = sensor.gyro['x']
+                # msg.gyro_y = sensor.gyro['y'][-1]
+                msg.gyro_y = sensor.gyro['y']
+                msg.gyro_z = sensor.gyro['z']
+                msg.accel_x = sensor.accel['x']
+                # msg.accel_y = sensor.accel['y'][-1]
+                msg.accel_y = sensor.accel['y']
+                msg.accel_z = sensor.accel['z']
+                msg.quat_x = sensor.quat['x']
+                msg.quat_y = sensor.quat['y']
+                msg.quat_z = sensor.quat['z']
+                msg.quat_w = sensor.quat['w']
+                # msg.angle = knee_angle
+                sensor.pub.publish(msg)
+            except:
+                rospy.logwarn("IMU Disconnected")
             rate.sleep()
         else:
             break

@@ -81,9 +81,21 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 		elif command == 'stop_therapy':
 			is_done, msg = Server().stop_therapy()
 		elif command == 'start_assistance':
-			time_assistance = args
-			print ("Received Args: Time = " + time_assistance)
-			is_done, msg = Server().start_assistance(time_assistance = time_assistance)
+			args = args.split(' ')
+			args = list(map(str,args))
+			patient_name = ''
+			for i in range (0,len(args)-2):
+				if i == 0:
+					patient_name = patient_name + args[0]
+				else:
+					patient_name = patient_name + '_' + args[i]
+			if (('.' in patient_name) or ('/' in patient_name) or ('-' in patient_name)):
+				is_done, msg = False, ("Los caracteres ingresados en el nombre del paciente no son aceptados. \nIngrese nuevamente el nombre")
+			else:
+				time_assistance = args[-1]
+				algorithm = args[-2]
+				print ("Received Args: Patient: " + patient_name + " ,Algorithm = " + algorithm + " ,Time = " + time_assistance)
+				is_done, msg = Server().start_assistance(time_assistance = time_assistance, patient_name = patient_name, algorithm = algorithm)
 		elif command == 'open_port':
 			is_done, msg = Server().open_port()
 		elif command == 'stop_assistance':
@@ -96,6 +108,8 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 			is_done, msg = Server().close_terminal()
 		elif command == 'exit':
 			is_done, msg = Server().exit()
+		elif command == 'shutdown':
+			is_done, msg = Server().shutdown()
 		else:
 			print ("Error: Unknown command")
 		try:

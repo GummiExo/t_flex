@@ -1,0 +1,8 @@
+	<!-- -*- mode: XML -*- -->
+<launch>
+  <arg name="time"/>
+  <node pkg="t_flex" name="imu_data_acquisition" type="imu_data_acquisition.py" output ='screen'/>
+  <!--node pkg="t_flex" name="export_imu_fsr_data" type="export_imu_fsr_data.py" output ='screen'/-->
+  <node pkg="t_flex" name="threshold_gait_detection_node" type="threshold_gait_detection_node" output ='screen'/>
+  <node pkg="t_flex" name="gait_assistance" type="gait_assistance.py" output='screen' args="-t $(arg time)"/>
+</launch>

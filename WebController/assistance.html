@@ -10,16 +10,27 @@
 				background-position: fixed;
 			}
 			.header {
-		    padding: 0% 0% 97% 0%;
+		    padding: 65% 0% 0% 5%;
 			}
 			.time_box{
-				padding: 0% 0% 15% 75%;
+				padding: 20% 0% 0% 75%;
+			}
+			.selector_box1{
+				padding: 10% 0% 0% 0%;
+			}
+			.selector_box2{
+				padding: 2% 0% 0% 0%;
 			}
 			.buttons_box{
-				padding: 0% 0% 0% 0%;
+				padding: 5% 0% 0% 0%;
 			}
 			.menu {
-			    padding: 42% 0% 0% 0%;
+			    padding: 30% 0% 0% 0%;
+			}
+			input[type=text] {
+				padding: 0% 0% 0% 0%;
+				width: 40%;
+
 			}
 			input[type=number] {
 				padding: 5% 2% 10% 5%;
@@ -58,13 +69,31 @@
 			.button_menu:hover {
 			    background-color: #FA8072;
 			}
+			.selector{
+				text-align: right;
+			}
 
 		</style>
 	</head>
 	<body src ="{{ static_url("media/assistance_screen.png")}}">
-		<div class="header"></div>
+		<div class="header">
+			<b><font face="sans-serif" color="black" style="font-size:120%">Nombre del Paciente</b> <br>
+			<input type="string" name="patient" value="N N" id="patient_name" style="font-size:80%"/>
+		</div>
 		<div class="time_box">
 			<input type="number" name="time" step="1" value="20" id="time_assistance" />
+		</div>
+		<div class="selector_box1">
+			<center><select class="selector" id="selector_assistance" style="font-size:90%">
+				<option value="assistance">Asistencia</option>
+				<option value="training">Entrenamiento de Modelo</option>
+			</center></select>
+		</div>
+		<div class="selector_box2">
+			<center><select class="selector" id="selector_algorithm" style="font-size:90%">
+				<option value="threshold">Umbrales</option>
+				<option value="machine_learning">Machine Learning</option>
+			</center></select>
 		</div>
 		<div class="buttons_box">
 			<div class="row">

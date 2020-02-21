@@ -10,21 +10,23 @@ import sys
 
 class TherapyController(object):
     def __init__(self):
-        self.repeats, self.frecuency, self.speed = int(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3])
-        home = os.path.expanduser('~')
-        os.chdir(home + '/catkin_ws/src/t_flex/yaml')
-        f = open("calibrationAngle.yaml", "r+")
-        params = [f.readline().strip().split()[1] for i in range(4)]
-        print(params)
-        rospy.init_node('t_flex_therapy', anonymous = True)
-        self.ValueToPubUp1 = float(params[0])
-        self.ValueToPubDown1 = float(params[1])
-        self.ValueToPubUp2 = float(params[2])
-        self.ValueToPubDown2 = float(params[3])
-        set_motor_speed(self.speed)
-        rospy.Subscriber("/t_flex/kill_therapy", Bool, self.updateFlagTherapy)
+        #self.repeats, self.frecuency, self.speed = int(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3])
+        #home = os.path.expanduser('~')
+        #os.chdir(home + '/catkin_ws/src/t_flex/yaml')
+        #f = open("calibrationAngle.yaml", "r+")
+        #params = [f.readline().strip().split()[1] for i in range(4)]
+        #print(params)
+        rospy.init_node('castor_trials', anonymous = True)
+        #self.ValueToPubUp1 = float(params[0])
+        #self.ValueToPubDown1 = float(params[1])
+        #self.ValueToPubUp2 = float(params[2])
+        #self.ValueToPubDown2 = float(params[3])
+	self.speed = 10
+	self.repeats = 20
+	self.frequency = 0.8        
+	set_motor_speed(self.speed)
+        rospy.Subscriber("/castor/kill_trial", Bool, self.updateFlagTherapy)
         self.frontal_motor_pub = rospy.Publisher("/tilt1_controller/command", Float64, queue_size = 1, latch = False)
-        self.posterior_motor_pub = rospy.Publisher("/tilt2_controller/command", Float64, queue_size = 1, latch = False)
         self.kill_therapy = False
 
     def updateFlagTherapy(self, flag):
@@ -32,17 +34,20 @@ class TherapyController(object):
 
     def automatic_movement(self):
         rospy.loginfo("------------------------ THERAPY STARTED ------------------------")
+	self.ValueToPubUp1 = 0.0
         for n in range (0,self.repeats):
             if not self.kill_therapy:
+		print(self.ValueToPubUp1)
                 ''' Publisher Motor ID 1 and Motor ID 2'''
                 self.frontal_motor_pub.publish(self.ValueToPubUp1)
-                self.posterior_motor_pub.publish(self.ValueToPubDown2)
-                time.sleep(1/self.frecuency)
-                self.frontal_motor_pub.publish(self.ValueToPubDown1)
-                self.posterior_motor_pub.publish(self.ValueToPubUp2)
-                time.sleep(1/self.frecuency)
-            else:
-                break
+                time.sleep(1/self.frequency)
+		self.frontal_motor_pub.publish(-self.ValueToPubUp1)
+                time.sleep(1/self.frequency)
+		self.ValueToPubUp1  = self.ValueToPubUp1 + 0.1
+                if self.ValueToPubUp1 >= 2.5:
+		    break
+             #else:
+                #break
         rospy.loginfo("------------------------ THERAPY FINISHED -----------------------")
 
     def process(self):
@@ -54,18 +59,14 @@ def release_motors():
     value = False
     type_service = TorqueEnable
     service_frontal = '/tilt1_controller/torque_enable'
-    service_posterior = '/tilt2_controller/torque_enable'
     ans = call_service(service=service_frontal, type=type_service, val = value)
-    ans = call_service(service=service_posterior, type=type_service, val = value)
-
+    
 def set_motor_speed(speed):
     value = speed
     type_service = SetSpeed
     service_frontal = '/tilt1_controller/set_speed'
-    service_posterior = '/tilt2_controller/set_speed'
     ans = call_service(service=service_frontal, type=type_service, val = value)
-    ans = call_service(service=service_posterior, type=type_service, val = value)
-
+    
 def call_service(service,type,val):
     rospy.wait_for_service(service)
     try:

@@ -1,0 +1,12 @@
+<!-- -*- mode: XML -*- -->
+
+<launch>
+    <!-- Start tilt joint controller -->
+    <rosparam file="$(find t_flex)/yaml/castor_parameters.yaml" command="load"/>
+    <node name="tilt_controller_spawner_frontal" pkg="dynamixel_controllers" type="controller_spawner.py"
+          args="--manager=frontal_motor
+                --port frontal_tilt_port
+                tilt1_controller"
+                output="screen"/>
+
+</launch>

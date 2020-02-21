@@ -5,8 +5,7 @@ import sys, getopt
 import rospy
 import time
 from dynamixel_controllers.srv import SetSpeed, TorqueEnable
-from t_flex.msg import GaitPhase
-from std_msgs.msg import Bool, Float64
+from std_msgs.msg import Bool, Float64, Int8
 import threading
 import logging
 import os
@@ -18,13 +17,10 @@ class Controller(object):
         self.event = 0
         self.start_time = 0
         self.program_time = time.time()
-        self.gait_phases = {1: "Heel strike",
-                            2: "Flat foot",
-                            3: "Midstance",
-                            4: "Heel-off",
-                            5: "Toe-off",
-                            6: "Midswing",
-                            7: "Invalid"}
+        self.gait_phases = {0: "Heel strike",
+                            1: "Flat foot",
+                            2: "Heel-off",
+                            3: "Toe-off"}
         rospy.loginfo("------------------------- GAIT ASSISTANT ------------------------")
         rospy.loginfo("----------------------- ASSISTANT STARTED -----------------------")
         rospy.init_node('t_flex_gait_assistance', anonymous = True)
@@ -33,7 +29,7 @@ class Controller(object):
         self.flag = rospy.Subscriber("/kill_gait_assistance", Bool, self.updateFlagGaitAssistance)
         self.frontal_motor_pub = rospy.Publisher("/tilt1_controller/command", Float64, queue_size = 1, latch = False)
         self.posterior_motor_pub = rospy.Publisher("/tilt2_controller/command", Float64, queue_size = 1, latch = False)
-        rospy.Subscriber("/gait_phase_detection", GaitPhase, self.updateGaitEvent)
+        rospy.Subscriber("/gait_phase", Int8, self.updateGaitEvent)
         opts, args = getopt.getopt(sys.argv[1:], "t:", [])
         for opt, arg in opts:
             if opt == "-t":
@@ -58,8 +54,8 @@ class Controller(object):
     def updateFlagGaitAssistance(self,kill_signal):
         if kill_signal.data:
             rospy.logwarn("Killing gait assistance node due to external source")
-            #release_motors()
-            rospy.signal_shutdown("Node was killed by external source.")
+            release_motors()
+            #rospy.signal_shutdown("Node was killed by external source.")
 
     def flexion_movement(self):
         self.frontal_motor_pub.publish(self.ValueToPubUp1)
@@ -83,27 +79,28 @@ class Controller(object):
             kill_msg = Bool()
             kill_msg.data = True
             rospy.logwarn("Killing further nodes of gait assistance...")
-            self.kill.publish(kill_msg)
+            #self.kill.publish(kill_msg)
             rospy.signal_shutdown("Assistance time is up.")
         else:
             # Release motors if more than 1.5 seconds have passed between gait phases (No detection)
             if time.time() - self.start_time > 1.5:
                 #release_motors()
                 self.start_time = time.time()
-            if sensor.phase != self.event:
+            if sensor.data != self.event:
                 self.start_time = time.time()
-                self.event = sensor.phase
+                self.event = sensor.data
                 rospy.loginfo("Gait Phase: "+self.gait_phases[self.event])
                 ''' Heel Strike '''
                 if self.event == 1:
+		    #self.extension_movement()
                     self.maximum_stiffness()
                     print("\nPublishing: " + self.gait_phases[self.event] + "\n")
                 ''' Heel Off '''
-                if self.event == 4:
+                if self.event == 2:
                     self.extension_movement()
                     print("\nPublishing: " + self.gait_phases[self.event] + "\n")
-                ''' Mid-Swing '''
-                if self.event == 6:
+                ''' Toe-Off '''
+                if self.event == 3:
                     self.flexion_movement()
                     print("\nPublishing: " + self.gait_phases[self.event] + "\n")
                 ''' Invalide state! '''
