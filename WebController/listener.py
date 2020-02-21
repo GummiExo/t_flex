@@ -133,7 +133,7 @@ menu_application = tornado.web.Application([
 	(r'/configure.html', ConfigureHandler),
 	(r'/bci.html', BCIHandler),
 	(r'/ws', WSHandler),
-	("/src/(.*)",tornado.web.StaticFileHandler, {"path": "./src"},),
+	("/src/(.*)",tornado.web.StaticFileHandler, {"path": "/home/pi/WebController/src"},),
 	], **settings)
 
 if __name__ == "__main__":
