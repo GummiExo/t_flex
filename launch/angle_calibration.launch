@@ -1,0 +1,4 @@
+	<!-- -*- mode: XML -*- -->
+<launch>
+  <node pkg="t_flex" name="angle_calibration" type="angle_calibration.py" output ='screen'/>
+</launch>

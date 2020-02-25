@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys, getopt
-import rospy
+import rospy, rospkg
 import time
 from dynamixel_controllers.srv import SetSpeed, TorqueEnable
 from std_msgs.msg import Bool, Float64, Int8
@@ -34,8 +34,9 @@ class Controller(object):
         for opt, arg in opts:
             if opt == "-t":
                 self.time = int(arg)
-        home = os.path.expanduser('~')
-        os.chdir(home + '/catkin_ws/src/t_flex/yaml')
+        rospack = rospkg.RosPack()
+        package_directory = rospack.get_path('t_flex')
+        os.chdir(package_directory + '/yaml')
         f = open("calibrationAngle.yaml", "r+")
         params = [f.readline().strip().split()[1] for i in range(4)]
         self.ValueToPubUp1 = float(params[0])

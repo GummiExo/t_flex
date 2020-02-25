@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-import rospy
+import rospy, rospkg
 import time
 from dynamixel_controllers.srv import SetSpeed, TorqueEnable
 from std_msgs.msg import Bool, Float64
@@ -11,11 +11,11 @@ import sys
 class TherapyController(object):
     def __init__(self):
         self.repeats, self.frecuency, self.speed = int(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3])
-        home = os.path.expanduser('~')
-        os.chdir(home + '/catkin_ws/src/t_flex/yaml')
+        rospack = rospkg.RosPack()
+        package_directory = rospack.get_path('t_flex')
+        os.chdir(package_directory + '/yaml')
         f = open("calibrationAngle.yaml", "r+")
         params = [f.readline().strip().split()[1] for i in range(4)]
-        print(params)
         rospy.init_node('t_flex_therapy', anonymous = True)
         self.ValueToPubUp1 = float(params[0])
         self.ValueToPubDown1 = float(params[1])

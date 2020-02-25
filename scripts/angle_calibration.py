@@ -5,13 +5,14 @@ import time
 import os
 import math
 from dynamixel_msgs.msg import MotorStateList
-import rosparam
+import rosparam, rospkg
 from std_msgs.msg import Bool
 
 class T_FlexCalibration(object):
     def __init__(self):
-        home = os.path.expanduser('~')
-        params = rosparam.load_file(home + '/catkin_ws/src/t_flex/yaml/motors_parameters.yaml')
+        rospack = rospkg.RosPack()
+        self.package_directory = rospack.get_path('t_flex')
+        params = rosparam.load_file(self.package_directory + '/yaml/motors_parameters.yaml')
         self.max_value_motor1 = params[0][0]['tilt1_controller']['motor']['max']
         self.min_value_motor1 = params[0][0]['tilt1_controller']['motor']['min']
         self.init_value_motor1 = params[0][0]['tilt1_controller']['motor']['init']
@@ -34,9 +35,9 @@ class T_FlexCalibration(object):
 
     def updateMotorStateFrontal(self, motor_info):
 	try:
-            self.MotorStateFrontal = motor_info.motor_states[0]
+        self.MotorStateFrontal = motor_info.motor_states[0]
 	    self.MotorStatePosterior = motor_info.motor_states[1]
-            self.isMotorAngleUpdatedFrontal = True
+        self.isMotorAngleUpdatedFrontal = True
 	    self.isMotorAngleUpdatedPosterior = True
 	except:
 	    self.isMotorAngleUpdatedFrontal = False
@@ -112,8 +113,7 @@ class T_FlexCalibration(object):
         self.ValueToPubDown2 = self.pos_to_rad(self.ValueToPubDown2,self.init_value_motor2)
         rospy.loginfo("Value Up motor 1 Radians = %s Value Down motor 1 Radians = %s",self.ValueToPubUp1,self.ValueToPubDown1)
         rospy.loginfo("Value Up motor 2 Radians = %s Value Down motor 2 Radians = %s",self.ValueToPubUp2,self.ValueToPubDown2)
-        home = os.path.expanduser("~")
-        os.chdir(home + '/catkin_ws/src/t_flex/yaml')
+        os.chdir(self.package_directory + '/yaml')
         f = open('calibrationAngle.yaml','w+')
         info = ["ValueToPubUp1: "+str(self.ValueToPubUp1),
                 "ValueToPubDown1: "+str(self.ValueToPubDown1),
