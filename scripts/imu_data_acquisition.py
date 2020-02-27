@@ -5,7 +5,6 @@ from std_msgs.msg import Bool
 import smbus
 import time
 import ctypes
-from scipy.signal import butter,lfilter
 import numpy as np
 
 def enum(*args):
@@ -32,12 +31,24 @@ class IMU_BNO055:
         self.gyro = {'x': 0, 'y': 0, 'z': 0}
         self.accel = {'x': 0, 'y': 0, 'z': 0}
         self.quat = {'x': 0, 'y': 0, 'z': 0, 'w': 0}
-        # # Butterworth low-pass filter
-        # self.cutoff = 5    # Hz. Filter cutoff frequency
-        # self.fs = 100      # Fundamental frequency
-        # self.order = 4     # Filter order
-        # self.find_filter_params()
-        # # Calibration stage
+        """Butterworth low-pass filter (Cutoff frequency: 15 Hz)"""
+        self.gyro_filter_states = np.empty(2)
+        self.accel_filter_states = np.empty(2)
+        '''Numerator'''
+        self.gyro_a0_ = 0.1176
+        self.gyro_a1_ = 0.2352
+        self.gyro_a2_ = 0.1176
+        self.accel_a0_ = 0.1398
+        self.accel_a1_ = 0.2796
+        self.accel_a2_ = 0.1398
+        '''Denominator'''
+        self.gyro_b0_ = 1
+        self.gyro_b1_ = -0.8239
+        self.gyro_b2_ = 0.2942
+        self.accel_b0_ = 1
+        self.accel_b1_ = -0.7006
+        self.accel_b2_ = 0.2597
+        """Calibration stage"""
         # self.cal_angle = 0                   # Initial calibration angle
         GPwrMode = self.GPwrMode.NormalG     #  Gyro power mode
         Gscale = self.Gscale.GFS_250DPS   #  Gyro full scale
@@ -54,6 +65,8 @@ class IMU_BNO055:
         PWRMode = self.PWRMode.Normalpwr     #  Select BNO055 power mode
         OPRMode = self.OPRMode.NDOF        #
         #  Select BNO055 config mode
+        # while True:
+        #     try:
         self.write_byte(self.BNO055_OPR_MODE, self.OPRMode.CONFIGMODE )
         time.sleep(0.025)
         #  Select page 1 to configure sensors
@@ -76,32 +89,37 @@ class IMU_BNO055:
         #  Select BNO055 system operation mode
         self.write_byte(self.BNO055_OPR_MODE, OPRMode )
         time.sleep(0.025)
+                # break
 
         # ROS Node Initialization
         self.node_name = 'imu_data_acquisition'
         rospy.init_node(self.node_name, anonymous = True)
         self.pub = rospy.Publisher("/imu_data", IMUData, queue_size = 1, latch = False)
-        rospy.Subscriber("/kill_gait_assistance", Bool, self.updateFlagImuAcquisition)
+        rospy.Subscriber("kill_gait_assistance", Bool, self.updateFlagImuAcquisition)
         self.kill_flag = False
 
     def updateFlagImuAcquisition(self,flag_signal):
         self.kill_flag = flag_signal.data
-        if self.kill_flag:
-            rospy.logwarn("Killing IMU node due to external source")
 
-    # def find_filter_params(self):
-    #     """Find the necessary parameters for the Butterworth low-pass filter.
-    #     No return value, it modifies global variables though.
-    #     """
-    #     nyq = 0.5 * self.fs
-    #     normal_cutoff = self.cutoff / nyq
-    #     self.b, self.a = butter(self.order, normal_cutoff, btype='low', analog=False)
+    """2nd order Butterworth low-pass filter (cutoff frequency: 15 Hz)"""
+    def low_pass_filter_15hz(self, in_signal):
+        tmp = (in_signal - self.gyro_b1_ * self.gyro_filter_states[0]) - self.gyro_b2_ * self.gyro_filter_states[1];
+        filt_signal = (self.gyro_a0_*tmp + self.gyro_a1_*self.gyro_filter_states[0]) + self.gyro_a2_*self.gyro_filter_states[1];
 
-    # def butter_lowpass_filter(self,data):
-    #     """Apply the Butterworth low-pass filter for the given data and return
-    #     the filtered data
-    #     """
-    #     return lfilter(self.b, self.a, data)
+        self.gyro_filter_states[1] = self.gyro_filter_states[0];
+        self.gyro_filter_states[0] = tmp;
+
+        return filt_signal
+
+    """2nd order Butterworth low-pass filter (cutoff frequency: 17 Hz)"""
+    def low_pass_filter_17hz(self, in_signal):
+        tmp = (in_signal - self.accel_b1_ * self.accel_filter_states[0]) - self.accel_b2_ * self.accel_filter_states[1];
+        filt_signal = (self.accel_a0_*tmp + self.accel_a1_*self.accel_filter_states[0]) + self.accel_a2_*self.accel_filter_states[1];
+
+        self.accel_filter_states[1] = self.accel_filter_states[0];
+        self.accel_filter_states[0] = tmp;
+
+        return filt_signal
 
     # def read_initial_angle(self):
     #     """Read initial calibration pitch angle.
@@ -171,7 +189,8 @@ class IMU_BNO055:
         x, y, z = self.read_data(self.BNO055_ACC_DATA_X_LSB)
         self.accel['x'] = x/100.0
         # self.accel['y'].append(y)
-        self.accel['y'] = y/100.0
+        self.accel['y'] = self.low_pass_filter_17hz(y/100.0)
+        # self.accel['y'] = y/100.0
         self.accel['z'] = z/100.0
         # One must have at least 100 samples to start filtering data
         # if(len(self.accel['y']) >= 100):
@@ -187,7 +206,8 @@ class IMU_BNO055:
         x, y, z = self.read_data(self.BNO055_GYR_DATA_X_LSB)
         self.gyro['x'] = x/16.0
         # self.gyro['y'].append(y)
-        self.gyro['y'] = y/16.0
+        self.gyro['y'] = self.low_pass_filter_15hz(y/16.0)
+        # self.gyro['y'] = y/16.0
         self.gyro['z'] = z/16.0
         # One must have at least 100 samples to start filtering data
         # if(len(self.gyro['y']) >= 100):
@@ -553,7 +573,7 @@ def main():
                 # msg.angle = knee_angle
                 sensor.pub.publish(msg)
             except:
-                rospy.logwarn("IMU Disconnected")
+                rospy.logwarn("Lost connection!")
             rate.sleep()
         else:
             break
