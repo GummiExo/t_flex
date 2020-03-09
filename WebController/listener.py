@@ -8,10 +8,14 @@ import tornado.ioloop
 import tornado.web
 from server import Server
 
+import rospkg
+
+rospack = rospkg.RosPack()
+package_directory = rospack.get_path('t_flex')
 #Tornado Folder Paths
 settings = dict(
-	template_path = "/home/pi/WebController",
-	static_path = "/home/pi/WebController/src",
+	template_path = package_directory + "/WebController",
+	static_path = package_directory + "/WebController/src",
 	)
 #Server Port
 PORT = 3012
@@ -136,7 +140,7 @@ menu_application = tornado.web.Application([
 	(r'/configure.html', ConfigureHandler),
 	(r'/bci.html', BCIHandler),
 	(r'/ws', WSHandler),
-	("/src/(.*)",tornado.web.StaticFileHandler, {"path": "/home/pi/WebController/src"},),
+	("/src/(.*)",tornado.web.StaticFileHandler, {"path": package_directory + "/WebController/src"},),
 	], **settings)
 
 if __name__ == "__main__":

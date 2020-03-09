@@ -1,11 +1,11 @@
 <!-- -*- mode: XML -*- -->
 
 <launch>
-    <node name="dynamixel_manager_frontal" pkg="dynamixel_controllers" type="controller_manager.py" required="true" output="screen">
+    <node name="dynamixel_manager_motors" pkg="dynamixel_controllers" type="controller_manager.py" required="true" output="screen">
         <rosparam>
-            namespace: frontal_motor
+            namespace: tflex_motors
             serial_ports:
-                frontal_tilt_port:
+                tflex_tilt_port:
                     port_name: "/dev/ttyUSB0"
                     baud_rate: 2000000
                     min_motor_id: 1
@@ -13,16 +13,4 @@
                     update_rate: 1000
         </rosparam>
     </node >
-    <!-- node name="dynamixel_manager_posterior" pkg="dynamixel_controllers" type="controller_manager.py" required="true" output="screen">
-        <rosparam>
-            namespace: posterior_motor
-            serial_ports:
-                posterior_tilt_port:
-                    port_name: "/dev/ttyUSB1"
-                    baud_rate: 1000000
-                    min_motor_id: 2
-                    max_motor_id: 2
-                    update_rate: 1000
-        </rosparam>
-    </node -->
 </launch>

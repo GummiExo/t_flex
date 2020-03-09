@@ -1,8 +1,8 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-import time, os, sys
-import rospy, rospkg
+import time, os, sys, getopt, numpy
+import rospy, rospkg, rosparam
 from std_msgs.msg import Bool, Float64
 from dynamixel_msgs.msg import MotorStateList
 from dynamixel_controllers.srv import SetSpeed, TorqueEnable
@@ -14,7 +14,7 @@ class MirrorTherapyController(object):
         ''' Inputs arguments for the node '''
         opts, args = getopt.getopt(sys.argv[1:], "t:", [])
         for opt, arg in opts:
-            if opt == "-t" || "--time":
+            if opt == "-t" or "--time":
                 self.time = int(arg)
         ''' Motors Parameters '''
         rospack = rospkg.RosPack()
@@ -31,32 +31,34 @@ class MirrorTherapyController(object):
         ''' Variables '''
         self.isMotorAngleUpdated = False
         self.isPareticIMUUpated = False
-        self.isNoPareticIMUUpated = True
-        self.kill_therapy = False
-        self.euler_paretic = {'x': 0, 'y': 0, 'z': 0}
-        self.euler_no_paretic = {'x': 0, 'y': 0, 'z': 0}
+        self.isNoPareticIMUUpated = False
+        self.kill_mirror_therapy = False
+        #self.euler_paretic = {'x': 0, 'y': 0, 'z': 0}
+        #self.euler_no_paretic = {'x': 0, 'y': 0, 'z': 0}
+        self.angle_paretic = 0
+        self.angle_no_paretic = 0
         self.speed = 10 #Maximum velocity = 10
         self.calibration_time = 5 #seconds
-        self.k_gain =
-        self.initial_time = time.time()
+        self.k_gain = 0.1
+        self.initial_time = 0
         ''' Subscribers Initialization '''
         self.init_subscribers()
         ''' Publisher Initialization '''
         self.init_publishers()
         ''' Initial Configurations '''
-        set_motor_speed(self.speed)
-        self.initial_angle()
+        #set_motor_speed(self.speed)
 
     def init_subscribers(self):
         rospy.Subscriber('/motor_states/tilt_port',MotorStateList, self.updateMotorsState)
-        rospy.Subscriber('/paretic/imu_data', IMUData, self.updatePareticIMU)
-        rospy.Subscriber('/no_paretic/imu_data', IMUData, self.updateNoPareticIMU)
+        rospy.Subscriber('/imu_data/paretic', IMUData, self.updatePareticIMU)
+        rospy.Subscriber('/imu_data/no_paretic', IMUData, self.updateNoPareticIMU)
         rospy.Subscriber('/kill_mirror_therapy', Bool, self.updateFlagTherapy)
 
     def init_publishers(self):
         self.frontal_motor_pub = rospy.Publisher('/tilt1_controller/command', Float64, queue_size = 1, latch = False)
         self.posterior_motor_pub = rospy.Publisher('/tilt2_controller/command', Float64, queue_size = 1, latch = False)
         self.kill_mirror_therapy_pub = rospy.Publisher('/kill_mirror_therapy', Bool, queue_size = 1, latch = False)
+        self.kill_imu_acquisition_pub = rospy.Publisher('/kill_imu_acquisition', Bool, queue_size = 1, latch = False)
 
     def updateMotorsState(self, motor_info):
         try:
@@ -64,8 +66,8 @@ class MirrorTherapyController(object):
             self.MotorStatePosterior = motor_info.motor_states[1]
             self.position_to_radians()
             self.isMotorAngleUpdated = True
-	   except:
-           self.isMotorAngleUpdated = False
+        except:
+            self.isMotorAngleUpdated = False
 
     def updatePareticIMU(self, imu_data):
         #self.euler_paretic = {'x': imu_data.euler_x, 'y': imu_data.euler_y, 'z': imu_data.euler_z}
@@ -78,7 +80,9 @@ class MirrorTherapyController(object):
         self.isNoPareticIMUUpated = True
 
     def updateFlagTherapy(self, flag):
-        self.kill_therapy = flag.data
+        self.kill_mirror_therapy = flag.data
+        self.kill_imu_acquisition_pub.publish(True)
+        rospy.loginfo("Killing nodes for mirror therapy")
 
     def position_to_radians(self,flag):
         rad = (position - initial)*2*math.pi/4095
@@ -86,22 +90,46 @@ class MirrorTherapyController(object):
 
     def p_controller(self):
         angle_error = self.angle_no_paretic - self.angle_paretic
-        if self.isPareticIMUUpated and self.isNoPareticIMUUpated and self.isMotorAngleUpdated:}
-            current_state_m1 = position_to_radians(self.MotorStateFrontal.position, self.init_value_motor1)
-            current_state_m2 = position_to_radians(self.MotorStatePosterior.position, self.init_value_motor2)
-            if angle_error > 0:
-                control_signal = self._k_gain*angle_error
+        angle_error = 2*numpy.tanh(angle_error) # Saturation function for the error
+        angle_threshold = 3 #Degrees
+        if self.isPareticIMUUpated and self.isNoPareticIMUUpated and self.isMotorAngleUpdated:
+            current_state_m1 = self.position_to_radians(self.MotorStateFrontal.position, self.init_value_motor1)
+            current_state_m2 = self.position_to_radians(self.MotorStatePosterior.position, self.init_value_motor2)
+            control_signal = self.k_gain*angle_error
+            if angle_error > angle_threshold:
                 if self.init_value_motor1 == self.min_value_motor1:
-                    m1 = control_signal
-                else
-                    m1 = -control_signal
+                    m1 = current_state_m1 + control_signal
+                else:
+                    m1 = current_state_m1 - control_signal
                 if self.init_value_motor2 == self.min_value_motor2:
-                    m2 = -control_signal
-                else
-                    m2 = control_signal
+                    m2 = current_state_m2 - control_signal
+                else:
+                    m2 = current_state_m2 + control_signal
+            elif angle_error < -angle_threshold:
+                if self.init_value_motor1 == self.min_value_motor1:
+                    m1 = current_state_m1 - control_signal
+                else:
+                    m1 = current_state_m1 + control_signal
+                if self.init_value_motor2 == self.min_value_motor2:
+                    m2 = current_state_m2 + control_signal
+                else:
+                    m2 = current_state_m2 - control_signal
+            else:
+                return
             self.frontal_motor_pub.publish(m1)
             self.posterior_motor_pub.publish(m2)
+            self.isPareticIMUUpated = False
+            self.isNoPareticIMUUpated = False
+            self.isMotorAngleUpdated = False
+            return
+        else:
+            return
 
+    def time_control(self):
+        current_time = time.time()
+        if current_time - self.initial_time >= self.time:
+            self.kill_mirror_therapy_pub.publish(True)
+        return
 
 def release_motors():
     value = False
@@ -129,11 +157,18 @@ def call_service(service,type,val):
          rospy.loginfo("Service call failed: %s"%e)
 
 def main():
-    c = TherapyController()
-    rospy.on_shutdown(release_motors)
+    c = MirrorTherapyController()
+    rate = rospy.Rate(500)
+    #rospy.on_shutdown(release_motors)
+    time.sleep(c.calibration_time + 2)
+    c.initial_time = time.time()
+    rospy.loginfo("Starting Mirror Therapy")
     while not (rospy.is_shutdown()):
-        c.process()
-        break
+        c.p_controller()
+        c.time_control()
+        if c.kill_mirror_therapy:
+            break
+        rate.sleep()
     rospy.loginfo("Controller Finished")
 
 if __name__ == '__main__':

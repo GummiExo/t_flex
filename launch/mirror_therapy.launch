@@ -1,0 +1,6 @@
+<launch>
+  <arg name="time"/>
+  <node pkg="t_flex" name="imu_data_paretic" type="imu_data_acquisition.py" args="-b 3 -a 0x28 -n /imu_data/paretic"/>
+  <node pkg="t_flex" name="imu_data_no_paretic" type="imu_data_acquisition.py" args="-b 3 -a 0x29 -n /imu_data/no_paretic"/>
+  <node pkg="t_flex" name="mirror_therapy" type="mirror_therapy.py" args="-t $(arg time)" output="screen"/>
+</launch>
