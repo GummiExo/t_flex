@@ -3,7 +3,7 @@
 
 import rospy, rospkg
 import time
-from dynamixel_controllers.srv import SetSpeed, TorqueEnable
+from dynamixel_controllers.srv import SetSpeed, TorqueEnable, SetKGain
 from std_msgs.msg import Bool, Float64
 import os
 import sys
@@ -22,7 +22,7 @@ class TherapyController(object):
         self.ValueToPubUp2 = float(params[2])
         self.ValueToPubDown2 = float(params[3])
         set_motor_speed(self.speed)
-        rospy.Subscriber("/t_flex/kill_therapy", Bool, self.updateFlagTherapy)
+        rospy.Subscriber("/kill_therapy", Bool, self.updateFlagTherapy)
         self.frontal_motor_pub = rospy.Publisher("/tilt1_controller/command", Float64, queue_size = 1, latch = False)
         self.posterior_motor_pub = rospy.Publisher("/tilt2_controller/command", Float64, queue_size = 1, latch = False)
         self.kill_therapy = False

@@ -1,11 +1,11 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-import time, os, sys, getopt, numpy
+import time, os, sys, getopt, numpy, math
 import rospy, rospkg, rosparam
 from std_msgs.msg import Bool, Float64
 from dynamixel_msgs.msg import MotorStateList
-from dynamixel_controllers.srv import SetSpeed, TorqueEnable
+from dynamixel_controllers.srv import SetSpeed, TorqueEnable, SetKGain
 from t_flex.msg import IMUData
 
 
@@ -39,17 +39,21 @@ class MirrorTherapyController(object):
         self.angle_no_paretic = 0
         self.speed = 10 #Maximum velocity = 10
         self.calibration_time = 5 #seconds
-        self.k_gain = 0.1
+        self.k_gain = 0.02
         self.initial_time = 0
         ''' Subscribers Initialization '''
         self.init_subscribers()
         ''' Publisher Initialization '''
         self.init_publishers()
         ''' Initial Configurations '''
-        #set_motor_speed(self.speed)
+        set_motor_speed(self.speed)
+        time.sleep(0.1)
+        pid_service(id=1,p=35,i=40,d=0) #Frontal Motor
+        time.sleep(0.1)
+        pid_service(id=2,p=36,i=36,d=0) #Posterior Motor
 
     def init_subscribers(self):
-        rospy.Subscriber('/motor_states/tilt_port',MotorStateList, self.updateMotorsState)
+        rospy.Subscriber('/motor_states/tflex_tilt_port',MotorStateList, self.updateMotorsState)
         rospy.Subscriber('/imu_data/paretic', IMUData, self.updatePareticIMU)
         rospy.Subscriber('/imu_data/no_paretic', IMUData, self.updateNoPareticIMU)
         rospy.Subscriber('/kill_mirror_therapy', Bool, self.updateFlagTherapy)
@@ -64,7 +68,6 @@ class MirrorTherapyController(object):
         try:
             self.MotorStateFrontal = motor_info.motor_states[0]
             self.MotorStatePosterior = motor_info.motor_states[1]
-            self.position_to_radians()
             self.isMotorAngleUpdated = True
         except:
             self.isMotorAngleUpdated = False
@@ -84,18 +87,19 @@ class MirrorTherapyController(object):
         self.kill_imu_acquisition_pub.publish(True)
         rospy.loginfo("Killing nodes for mirror therapy")
 
-    def position_to_radians(self,flag):
+    def position_to_radians(self,position,initial):
         rad = (position - initial)*2*math.pi/4095
         return rad
 
     def p_controller(self):
         angle_error = self.angle_no_paretic - self.angle_paretic
-        angle_error = 2*numpy.tanh(angle_error) # Saturation function for the error
-        angle_threshold = 3 #Degrees
+        #print("Angle error: " + str(angle_error))
+        angle_threshold = 1 #Degrees
         if self.isPareticIMUUpated and self.isNoPareticIMUUpated and self.isMotorAngleUpdated:
             current_state_m1 = self.position_to_radians(self.MotorStateFrontal.position, self.init_value_motor1)
             current_state_m2 = self.position_to_radians(self.MotorStatePosterior.position, self.init_value_motor2)
-            control_signal = self.k_gain*angle_error
+            control_signal = self.k_gain*abs(angle_error)
+            #print("Current state m1 and m2: " + str(current_state_m1) + "\t" + str(current_state_m2))
             if angle_error > angle_threshold:
                 if self.init_value_motor1 == self.min_value_motor1:
                     m1 = current_state_m1 + control_signal
@@ -116,6 +120,10 @@ class MirrorTherapyController(object):
                     m2 = current_state_m2 - control_signal
             else:
                 return
+            #m1 = 2*numpy.tanh(m1) # Saturation function for the error
+            #m2 = 2*numpy.tanh(m2) # Saturation function for the error
+            #print("Value to pub m1 \t" + str(m1))
+            #print("Value to pub m2 \t" + str(m2))
             self.frontal_motor_pub.publish(m1)
             self.posterior_motor_pub.publish(m2)
             self.isPareticIMUUpated = False
@@ -147,6 +155,22 @@ def set_motor_speed(speed):
     ans = call_service(service=service_frontal, type=type_service, val = value)
     ans = call_service(service=service_posterior, type=type_service, val = value)
 
+def pid_service(id,p,i,d):
+    ''' PID services '''
+    p_service = 'tilt' + str(id) + '_controller/set_p_gain'
+    i_service = 'tilt' + str(id) + '_controller/set_i_gain'
+    d_service = 'tilt' + str(id) + '_controller/set_d_gain'
+    ans = call_service(service=p_service, type=SetKGain, val = p)
+    time.sleep(0.05)
+    ans1 = call_service(service=i_service, type=SetKGain, val = i)
+    time.sleep(0.05)
+    ans2 = call_service(service=d_service, type=SetKGain, val = d)
+    time.sleep(0.05)
+    if ans and ans1 and ans2:
+        rospy.loginfo("Successfull Gains Set (P: " + str(p) + " I: " + str(i) + " D: " + str(d))
+    else:
+        rospy.logerr("Gains set are not complete")
+
 def call_service(service,type,val):
     rospy.wait_for_service(service)
     try:
@@ -159,7 +183,7 @@ def call_service(service,type,val):
 def main():
     c = MirrorTherapyController()
     rate = rospy.Rate(500)
-    #rospy.on_shutdown(release_motors)
+    rospy.on_shutdown(release_motors)
     time.sleep(c.calibration_time + 2)
     c.initial_time = time.time()
     rospy.loginfo("Starting Mirror Therapy")

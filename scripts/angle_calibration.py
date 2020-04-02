@@ -26,21 +26,21 @@ class T_FlexCalibration(object):
         self.MotorStateFrontal = None
         self.MotorStatePosterior = None
         rospy.init_node('t_flex_angle_calibration', anonymous = True)
-        rospy.Subscriber("/motor_states/frontal_tilt_port",MotorStateList, self.updateMotorStateFrontal)
+        rospy.Subscriber("/motor_states/tflex_tilt_port",MotorStateList, self.updateMotorStateFrontal)
         #rospy.Subscriber("/motor_states/posterior_tilt_port",MotorStateList, self.updateMotorStatePosterior)
-        rospy.Subscriber("/t_flex/kill_angle_calibration", Bool, self.updateFlagAngleCalibration)
+        rospy.Subscriber("kill_angle_calibration", Bool, self.updateFlagAngleCalibration)
         self.isMotorAngleUpdatedFrontal = False
         self.isMotorAngleUpdatedPosterior = False
         self.CALIBRATE = False
 
     def updateMotorStateFrontal(self, motor_info):
-	try:
-        self.MotorStateFrontal = motor_info.motor_states[0]
-	    self.MotorStatePosterior = motor_info.motor_states[1]
-        self.isMotorAngleUpdatedFrontal = True
-	    self.isMotorAngleUpdatedPosterior = True
-	except:
-	    self.isMotorAngleUpdatedFrontal = False
+    	try:
+            self.MotorStateFrontal = motor_info.motor_states[0]
+    	    self.MotorStatePosterior = motor_info.motor_states[1]
+            self.isMotorAngleUpdatedFrontal = True
+    	    self.isMotorAngleUpdatedPosterior = True
+    	except:
+    	    self.isMotorAngleUpdatedFrontal = False
 
     def updateMotorStatePosterior(self, motor_info):
         self.MotorStatePosterior = motor_info.motor_states[0]
