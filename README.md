@@ -284,3 +284,6 @@ The T-FLEX package compiled in this image is the France branch, if you are other
  
  
  *If you have any question you can contact the developer of this software: Daniel Gómez Vargas - daniel.gomez-v@mail.escuelaing.edu.co*
+
+## License
+All versions of T-FLEX are licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode 
