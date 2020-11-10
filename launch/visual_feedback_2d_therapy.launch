@@ -1,0 +1,10 @@
+	<!-- -*- mode: XML -*- -->
+<launch>
+  <arg name="patient"/>
+  <arg name="date"/>
+  <node pkg="t_flex" name="imu_data_acquisition" type="imu_data_acquisition.py" output ='screen'/>
+  <node pkg="t_flex" name="movement_intention_imu" type="movement_intention_ang_vel_imu.py" output="screen"/>
+  <node pkg="t_flex" name="therapy_game" type="therapy_game_2d.py" output='screen'/>
+  <node name="record" pkg="rosbag" type="record" args="-a -O $(find t_flex)/log/therapy/visual_feedback_2d/$(arg patient)_$(arg date).bag"/>
+
+</launch>

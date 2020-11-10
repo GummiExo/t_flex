@@ -54,8 +54,8 @@ class MirrorTherapyController(object):
 
     def init_subscribers(self):
         rospy.Subscriber('/motor_states/tflex_tilt_port',MotorStateList, self.updateMotorsState)
-        rospy.Subscriber('/imu_data/paretic', IMUData, self.updatePareticIMU)
-        rospy.Subscriber('/imu_data/no_paretic', IMUData, self.updateNoPareticIMU)
+        rospy.Subscriber('/imu_data_paretic', IMUData, self.updatePareticIMU)
+        rospy.Subscriber('/imu_data_no_paretic', IMUData, self.updateNoPareticIMU)
         rospy.Subscriber('/kill_mirror_therapy', Bool, self.updateFlagTherapy)
 
     def init_publishers(self):

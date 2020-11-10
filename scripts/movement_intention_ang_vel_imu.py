@@ -20,7 +20,7 @@ class Calibracion(object):
         self.promedios = []
         self.umbral = 0
         self.mi_socket = socket.socket()
-        self.mi_socket.connect(("192.168.4.3", 3014))
+        self.mi_socket.connect(("192.168.4.6", 3014))
         #ROS Node Initialization
         rospy.init_node('movement_intention_imu', anonymous = True)
         self.pub = rospy.Publisher('movement_intention', Bool, queue_size = 1, latch = False)
@@ -83,12 +83,14 @@ class Calibracion(object):
             y = self.butter_filtro_pasabajos(self.datos)
             u = np.mean(y)
             if u > self.umbral:
-                print(u, "es MAYOR")
+                #print(u, "es MAYOR")
                 self.mi_socket.send('jump'.encode())
                 self.pub.publish(True)
+		time.sleep(0.01)
                 #self.rta = self.mi_socket.recv(1024)
             else:
                 self.pub.publish(False)
+		time.sleep(0.01)
                 #print(u, "es MENOR")
             self.isIMUUpdated = False
         else:
@@ -96,7 +98,7 @@ class Calibracion(object):
 
 def main():
     nueva_sesion = Calibracion()
-    rate = rospy.Rate(100)
+    rate = rospy.Rate(200)
     rospy.loginfo("Starting Movement Intention Detector")
     while not (rospy.is_shutdown()):
         if len(nueva_sesion.promedios) <= 5:
