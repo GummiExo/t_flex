@@ -1,0 +1,16 @@
+<!-- -*- mode: XML -*- -->
+
+<launch>
+    <node name="dynamixel_manager_motors" pkg="dynamixel_controllers" type="controller_manager.py" required="true" output="screen">
+        <rosparam>
+            namespace: tflex_motors
+            serial_ports:
+                tflex_tilt_port:
+                    port_name: "/dev/ttyUSB0"
+                    baud_rate: 2000000
+                    min_motor_id: 1
+                    max_motor_id: 2
+                    update_rate: 1000
+        </rosparam>
+    </node >
+</launch>

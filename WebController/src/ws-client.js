@@ -85,10 +85,28 @@ $(document).ready(function(){
     });
     // Assistance Mode
     $("#start_assistance").click(function(){
+        var patient_name = document.getElementById('patient_name')
+        var name = patient_name.value;
         var time_assistance = document.getElementById('time_assistance');
         var time = time_assistance.value;
-        ws.send("start_assistance " + time)
-        alert('Iniciando Asistencia\nTiempo: ' + time)
+        var selector_assistance = document.getElementById('selector_assistance');
+        var value_assistance = selector_assistance[selector_assistance.selectedIndex].value;
+        var selector_algorithm = document.getElementById('selector_algorithm');
+        var value_algorithm = selector_algorithm[selector_algorithm.selectedIndex].value;
+        if (value_assistance == 'assistance') {
+            if (value_algorithm == 'threshold') {
+              ws.send("start_assistance " + name + " threshold " + time)
+              alert('Iniciando Asistencia para ' + name + '\nTiempo: ' + time + '\nModalidad: Umbrales')
+            }
+            else if (value_algorithm == 'machine_learning'){
+              ws.send("start_assistance " + name + " machine_learning " + time)
+              alert('Iniciando Asistencia para ' + name + '\nTiempo: ' + time + '\nModalidad: Machine Learning')
+            }
+        }
+        else if (value_assistance == 'training') {
+            ws.send("train_model");
+            alert('Iniciando Entrenamiento del Modelo para')
+        }
     });
     $("#stop_assistance").click(function(){
         ws.send("stop_assistance")
@@ -135,5 +153,9 @@ $(document).ready(function(){
     $("#exit").click(function(){
         alert('Cerrando Procesos Activos');
         ws.send('exit')
+    });
+    $("#shutdown").click(function(){
+        alert('Apagando la Raspberry por favor espere hasta que el botón verde no se encienda');
+        ws.send('shutdown')
     });
 });

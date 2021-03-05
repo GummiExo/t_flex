@@ -1,31 +1,30 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-import rospy
+import rospy, rospkg
 import time
-import dmx_firmware
-from dynamixel_workbench_msgs.srv import JointCommand, TorqueEnable
-from std_msgs.msg import Bool
+from dynamixel_controllers.srv import SetSpeed, TorqueEnable, SetKGain
+from std_msgs.msg import Bool, Float64
 import os
 import sys
 
 class TherapyController(object):
     def __init__(self):
         self.repeats, self.frecuency, self.speed = int(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3])
-        ''' Max Speed Value: 1024 '''
-        self.speed = self.speed*1024/10
-        home = os.path.expanduser('~')
-        os.chdir(home + '/catkin_ws/src/t_flex/yaml')
+        rospack = rospkg.RosPack()
+        package_directory = rospack.get_path('t_flex')
+        os.chdir(package_directory + '/yaml')
         f = open("calibrationAngle.yaml", "r+")
         params = [f.readline().strip().split()[1] for i in range(4)]
-        print(params)
         rospy.init_node('t_flex_therapy', anonymous = True)
         self.ValueToPubUp1 = float(params[0])
         self.ValueToPubDown1 = float(params[1])
         self.ValueToPubUp2 = float(params[2])
         self.ValueToPubDown2 = float(params[3])
         set_motor_speed(self.speed)
-        rospy.Subscriber("/t_flex/kill_therapy", Bool, self.updateFlagTherapy)
+        rospy.Subscriber("/kill_therapy", Bool, self.updateFlagTherapy)
+        self.frontal_motor_pub = rospy.Publisher("/tilt1_controller/command", Float64, queue_size = 1, latch = False)
+        self.posterior_motor_pub = rospy.Publisher("/tilt2_controller/command", Float64, queue_size = 1, latch = False)
         self.kill_therapy = False
 
     def updateFlagTherapy(self, flag):
@@ -35,12 +34,12 @@ class TherapyController(object):
         rospy.loginfo("------------------------ THERAPY STARTED ------------------------")
         for n in range (0,self.repeats):
             if not self.kill_therapy:
-                ''' Position Publisher Motor ID 1 and Motor ID 2'''
-                # set_position(self.ValueToPubUp1,self.ValueToPubDown2)
-                self.motor_position_command(val_motor1 = self.ValueToPubUp1, val_motor2 = self.ValueToPubDown2)
+                ''' Publisher Motor ID 1 and Motor ID 2'''
+                self.frontal_motor_pub.publish(self.ValueToPubUp1)
+                self.posterior_motor_pub.publish(self.ValueToPubDown2)
                 time.sleep(1/self.frecuency)
-                # set_position(self.ValueToPubDown1,self.ValueToPubUp2)
-                self.motor_position_command(val_motor1 = self.ValueToPubDown1, val_motor2 = self.ValueToPubUp2)
+                self.frontal_motor_pub.publish(self.ValueToPubDown1)
+                self.posterior_motor_pub.publish(self.ValueToPubUp2)
                 time.sleep(1/self.frecuency)
             else:
                 break
@@ -50,43 +49,31 @@ class TherapyController(object):
         self.automatic_movement()
         release_motors()
 
-    def motor_position_command(self, val_motor1 = 0, val_motor2 = 0):
-        #create service handler for motor1
-        service = dmx_firmware.DmxCommandClientService(service_name = '/t_flex_motors/goal_position')
-        service.service_request_threaded(id = 1,val = val_motor1)
-        service.service_request_threaded(id = 2, val = val_motor2)
 
 def release_motors():
-    val = False
-    service = '/t_flex_motors/torque_enable'
-    rospy.wait_for_service(service)
-    try:
-         enable_torque = rospy.ServiceProxy(service, TorqueEnable)
-         ''' Torque Disabled Motor ID 1 '''
-         resp1 = enable_torque(id=1,value=val)
-         time.sleep(0.001)
-         ''' Torque Disabled Motor ID 2 '''
-         resp2 = enable_torque(id=2,value=val)
-         time.sleep(0.001)
-         return (resp1.result & resp2.result)
-    except rospy.ServiceException, e:
-         print "Service call failed: %s"%e
+    value = False
+    type_service = TorqueEnable
+    service_frontal = '/tilt1_controller/torque_enable'
+    service_posterior = '/tilt2_controller/torque_enable'
+    ans = call_service(service=service_frontal, type=type_service, val = value)
+    ans = call_service(service=service_posterior, type=type_service, val = value)
 
 def set_motor_speed(speed):
-    val = speed
-    service = '/t_flex_motors/goal_speed'
+    value = speed
+    type_service = SetSpeed
+    service_frontal = '/tilt1_controller/set_speed'
+    service_posterior = '/tilt2_controller/set_speed'
+    ans = call_service(service=service_frontal, type=type_service, val = value)
+    ans = call_service(service=service_posterior, type=type_service, val = value)
+
+def call_service(service,type,val):
     rospy.wait_for_service(service)
     try:
-         motor_speed = rospy.ServiceProxy(service, JointCommand)
-         ''' Set Speed Motor ID 1 '''
-         resp1 = motor_speed(id=1,value=val)
-         time.sleep(0.001)
-         ''' Set Speed Motor ID 2 '''
-         resp2 = motor_speed(id=2,value=val)
-         time.sleep(0.001)
-         return (resp1.result & resp2.result)
-    except rospy.ServiceException:
-         print ("Service call failed: %s"%e)
+        srv =  rospy.ServiceProxy(service, type)
+        ans = srv(val)
+        return ans
+    except rospy.ServiceException, e:
+         rospy.loginfo("Service call failed: %s"%e)
 
 def main():
     c = TherapyController()

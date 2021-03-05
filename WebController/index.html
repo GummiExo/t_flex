@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
 <html>
 	<head>
 		<meta charset="utf-8" />
@@ -12,7 +13,7 @@
 				/* background-position: fixed; */
 			}
 			.config {
-		    padding: 0% 0% 4% 80%;
+		    padding: 0% 0% 8% 80%;
 			}
 			.bci {
 		    padding: 0% 80% 0% 0%;
@@ -56,6 +57,16 @@
 			.act_button:hover {
 				background-color: blue;
 			}
+			.power_button {
+				background-color: red;
+				border: none;
+				padding: 3% 4%;
+				outline: none;
+				border-radius: 12px;
+			}
+			.power_button:hover {
+				background-color: blue;
+			}
 			.buttons {
 		    background-color: #3969DA;
 		    border: none;
@@ -94,11 +105,12 @@
 		<div class="config" align="right">
 			<a href="configure.html"><button class="button"><img class="image_conf" src="{{ static_url("media/configure.png")}}"></button></a>
 		</div>
-		<div class="bci" align="left">
+		<!-- <div class="bci" align="left">
 			<a href="bci.html"><button class="button"><img class="image" src="{{ static_url("media/bci.png")}}"></button></a>
-		</div>
+		</div> -->
 		<div class="header">
 			<div align="left"><button class="act_button" id="activate_device">Activar Motores</button></div>
+			<div align="right"><button class="power_button" id="shutdown">Apagar Dispositivo</button></div>
 		</div>
 		<div class="calibration"><a href="calibration.html">
 			<center> <button class="buttons button_cal">Calibrar</button> </center>
@@ -112,9 +124,9 @@
 		<div class="exit">
 			<center> <button class="button_exit" id="exit">Salir</button></center>
 		</div>
-
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script src="{{ static_url("jquery.min.js")}}"></script>
 		<script src="{{ static_url("ws-client.js")}}"></script>
+		<!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script> -->
 		<!-- <script src="{{ static_url("jquery.min.js")}}"></script> -->
 	</body>
 </html>

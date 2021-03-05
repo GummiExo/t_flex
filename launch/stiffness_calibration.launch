@@ -1,0 +1,4 @@
+	<!-- -*- mode: XML -*- -->
+<launch>
+  <node pkg="t_flex" name="stiffness_calibration" type="stiffness_calibration.py" output ='screen'/>
+</launch>

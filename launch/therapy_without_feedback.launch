@@ -1,0 +1,11 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+  <arg name="patient"/>
+  <arg name="date"/>
+  <arg name="repetitions"/>
+  <arg name="frequency"/>
+  <node pkg="t_flex" name="imu_data_acquisition" type="imu_data_acquisition.py" output ='screen'/>
+  <node pkg="t_flex" name="therapy" type="therapy.py" args="$(arg repetitions) $(arg frequency) 10"  output="screen"/>
+  <node name="record" pkg="rosbag" type="record" args="-a -O $(find t_flex)/log/therapy/without_feedback/$(arg patient)_$(arg date).bag"/>
+
+</launch>

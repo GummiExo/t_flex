@@ -3,36 +3,46 @@
 import rospy
 import time
 import os
-from dynamixel_workbench_msgs.msg import DynamixelStatusList
+import math
+from dynamixel_msgs.msg import MotorStateList
+import rosparam, rospkg
 from std_msgs.msg import Bool
 
 class T_FlexCalibration(object):
     def __init__(self):
-        home = os.path.expanduser('~')
-        os.chdir(home + '/catkin_ws/src/t_flex/yaml')
-        f = open("motor_position_values.yaml", "r+")
-        params = [f.readline().strip().split()[1] for i in range(4)]
-        self.max_value_motor1 = float(params[0])
-        self.min_value_motor1 = float(params[1])
-        self.max_value_motor2 = float(params[2])
-        self.min_value_motor2 = float(params[3])
-        self.variable_stiffness_angle1 = self.max_value_motor1
-        self.variable_stiffness_angle2 = self.min_value_motor2
-        self.Motor1State = None
-        self.Motor2State = None
-        rospy.init_node('stiffness_calibration', anonymous = True)
-        rospy.Subscriber("/t_flex_motors/dynamixel_status",DynamixelStatusList, self.updateMotorState)
+        rospack = rospkg.RosPack()
+        self.package_directory = rospack.get_path('t_flex')
+        params = rosparam.load_file(self.package_directory + '/yaml/motors_parameters.yaml')
+        self.max_value_motor1 = params[0][0]['tilt1_controller']['motor']['max']
+        self.min_value_motor1 = params[0][0]['tilt1_controller']['motor']['min']
+        self.init_value_motor1 = params[0][0]['tilt1_controller']['motor']['init']
+        self.max_value_motor2 = params[0][0]['tilt2_controller']['motor']['max']
+        self.min_value_motor2 = params[0][0]['tilt2_controller']['motor']['min']
+        self.init_value_motor2 = params[0][0]['tilt2_controller']['motor']['init']
+        self.variable_stiffness_angle1 = self.init_value_motor1
+        self.variable_stiffness_angle2 = self.init_value_motor2
+        self.MotorStateFrontal = None
+        self.MotorStatePosterior = None
+        rospy.init_node('t_flex_stiffness_calibration', anonymous = True)
+        rospy.Subscriber("/motor_states/frontal_tilt_port",MotorStateList, self.updateMotorStateFrontal)
+        #rospy.Subscriber("/motor_states/posterior_tilt_port",MotorStateList, self.updateMotorStatePosterior)
         rospy.Subscriber("/t_flex/kill_stiffness_calibration", Bool, self.updateFlagStiffnessCalibration)
-        self.isMotorAngleUpdated = False
+        self.isMotorAngleUpdatedFrontal = False
+        self.isMotorAngleUpdatedPosterior = False
         self.CALIBRATE = False
 
-    def updateMotorState(self, motor_info):
-        if len(motor_info.dynamixel_status) < 2:
-            self.isMotorAngleUpdated = False
-        else:
-            self.Motor1State = motor_info.dynamixel_status[0]
-            self.Motor2State = motor_info.dynamixel_status[1]
-            self.isMotorAngleUpdated = True
+    def updateMotorStateFrontal(self, motor_info):
+        try:
+            self.MotorStateFrontal = motor_info.motor_states[0]
+            self.MotorStatePosterior = motor_info.motor_states[1]
+            self.isMotorAngleUpdatedFrontal = True
+            self.isMotorAngleUpdatedPosterior = True
+        except:
+            self.isMotorAngleUpdatedFrontal = False
+
+    def updateMotorStatePosterior(self, motor_info):
+        self.MotorStatePosterior = motor_info.motor_states[0]
+        self.isMotorAngleUpdatedPosterior = True
 
     def updateFlagStiffnessCalibration(self, flag):
         self.CALIBRATE = flag.data
@@ -40,17 +50,35 @@ class T_FlexCalibration(object):
     def calibration_variable_stiffness(self):
         rospy.loginfo("Calibration Thread Started")
         while not self.CALIBRATE:
-            if self.isMotorAngleUpdated == True:
-				if self.Motor1State.present_position < self.variable_stiffness_angle1:
-					self.variable_stiffness_angle1  = self.Motor1State.present_position
-				if self.Motor2State.present_position > self.variable_stiffness_angle2:
-					self.variable_stiffness_angle2  = self.Motor2State.present_position
-				self.isMotorAngleUpdated = False
+            ''' Frontal Motor '''
+            if self.isMotorAngleUpdatedFrontal == True:
+                if self.init_value_motor1 == self.min_value_motor1:
+    				if self.MotorStateFrontal.position > self.variable_stiffness_angle1:
+    					self.variable_stiffness_angle1  = self.MotorStateFrontal.position
+                else:
+                    if self.MotorStateFrontal.position < self.variable_stiffness_angle1:
+    					self.variable_stiffness_angle1  = self.MotorStateFrontal.position
+                self.isMotorAngleUpdatedFrontal = False
+            ''' Posterior '''
+            if self.isMotorAngleUpdatedPosterior == True:
+                if self.init_value_motor2 == self.min_value_motor2:
+                    if self.init_value_motor2 == self.min_value_motor2:
+        				if self.MotorStatePosterior.position > self.variable_stiffness_angle2:
+        					self.variable_stiffness_angle2  = self.MotorStatePosterior.position
+                    else:
+                        if self.MotorStatePosterior.position < self.variable_stiffness_angle2:
+        					self.variable_stiffness_angle2  = self.MotorStatePosterior.position
+                self.isMotorAngleUpdatedPosterior = False
         rospy.loginfo("Calibration Thread Finished")
+
+    def pos_to_rad(self,position,initial):
+        rad = (position - initial)*2*math.pi/4095
+        return rad
 
     def process(self):
         self.StiffnessValueToPub1 = self.variable_stiffness_angle1
         self.StiffnessValueToPub2 = self.variable_stiffness_angle2
+        ''' Validation of Range '''
         # Validation Motor id 1
         if self.StiffnessValueToPub1 > self.max_value_motor1:
             self.StiffnessValueToPub1 = self.max_value_motor1
@@ -62,8 +90,11 @@ class T_FlexCalibration(object):
         if self.StiffnessValueToPub2 < self.min_value_motor2:
             self.StiffnessValueToPub2 = self.min_value_motor2
         rospy.loginfo("Stiffness Value motor 1 = %s Stiffness Value motor 2 = %s",self.StiffnessValueToPub1,self.StiffnessValueToPub2)
-        home = os.path.expanduser("~")
-        os.chdir(home + '/catkin_ws/src/t_flex/yaml')
+        ''' Conversion to Radians '''
+        self.StiffnessValueToPub1 = self.pos_to_rad(self.StiffnessValueToPub1,self.init_value_motor1)
+        self.StiffnessValueToPub2 = self.pos_to_rad(self.StiffnessValueToPub2,self.init_value_motor2)
+        rospy.loginfo("Stiffness Value Motor 1 Radians = %s Stiffness Value Motor 2 Radians = %s",self.StiffnessValueToPub1,self.StiffnessValueToPub2)
+        os.chdir(self.package_directory + '/yaml')
         f = open('calibrationStiffness.yaml','w+')
         info = ["StiffnessValueToPub1: "+str(self.StiffnessValueToPub1),
                 "StiffnessValueToPub2: "+str(self.StiffnessValueToPub2)]
@@ -75,7 +106,7 @@ def main():
     c = T_FlexCalibration()
     rate = rospy.Rate(10)
     while not (rospy.is_shutdown()):
-        if not (c.Motor1State == None and c.Motor2State == None):
+        if not (c.MotorStateFrontal == None and c.MotorStatePosterior == None):
             c.calibration_variable_stiffness()
             break
     rospy.on_shutdown(c.process)
