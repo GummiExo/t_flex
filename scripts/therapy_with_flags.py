@@ -20,12 +20,12 @@ class Controller(object):
         self.ValueToPubUp2 = float(params[2])
         self.ValueToPubDown2 = float(params[3])
         self.frecuency = 0.5
-        self.speed = 3
+        self.speed = 1
         set_motor_speed(self.speed)
         rospy.init_node('t_flex_therapy_with_flags', anonymous = True)
         rospy.Subscriber("/t_flex/kill_therapy", Bool, self.updateFlagTherapy)
         rospy.Subscriber("/t_flex/update_speed", Float64, self.updateSpeed)
-        rospy.Subscriber("/t_flex/enable_device", Bool, self.updateFlagEnable)
+        rospy.Subscriber("enable_device", Bool, self.updateFlagEnable)
         self.frontal_motor_pub = rospy.Publisher("/tilt1_controller/command", Float64, queue_size = 1, latch = False)
         self.posterior_motor_pub = rospy.Publisher("/tilt2_controller/command", Float64, queue_size = 1, latch = False)
         self.kill_therapy = False
@@ -42,31 +42,33 @@ class Controller(object):
     def updateFlagEnable(self, flag):
         self.enable = flag.data
         if self.enable:
-            rospy.loginfo("Assisting..")
+            rospy.loginfo("Assisting Dorsiflexion")
         else:
-            rospy.loginfo("Disabling Motors")
+            rospy.loginfo("Assisting Platarflexion")
 
     def automatic_movement(self):
-        rospy.loginfo("------------------------ THERAPY STARTED ------------------------")
-        while not self.kill_therapy:
-            if self.enable:
-                ''' Publisher Motor ID 1 and Motor ID 2'''
-                self.frontal_motor_pub.publish(self.ValueToPubUp1)
-                self.posterior_motor_pub.publish(self.ValueToPubDown2)
-                time.sleep(1/self.frecuency)
-                self.frontal_motor_pub.publish(self.ValueToPubDown1)
-                self.posterior_motor_pub.publish(self.ValueToPubUp2)
-                time.sleep(1/self.frecuency)
-                self.disabled = False
-            else:
-                if not self.disabled:
-                    release_motors()
-                    self.disabled = True
-        rospy.loginfo("------------------------ THERAPY FINISHED -----------------------")
+        #rospy.loginfo("------------------------ THERAPY STARTED ------------------------")
+        if self.enable:
+            ''' Publisher Motor ID 1 and Motor ID 2'''
+            self.frontal_motor_pub.publish(self.ValueToPubUp1)
+            self.posterior_motor_pub.publish(self.ValueToPubDown2)
+                #time.sleep(1/self.frecuency)
+                #self.frontal_motor_pub.publish(self.ValueToPubDown1)
+                #self.posterior_motor_pub.publish(self.ValueToPubUp2)
+                #time.sleep(1/self.frecuency)
+                #self.disabled = False
+        else:
+            self.frontal_motor_pub.publish(self.ValueToPubDown1)
+            self.posterior_motor_pub.publish(self.ValueToPubUp2)
+                
+                    #release_motors()
+                    #self.disabled = True
+        time.sleep(0.5)
+        #rospy.loginfo("------------------------ THERAPY FINISHED -----------------------")
 
     def process(self):
         self.automatic_movement()
-        release_motors()
+        #release_motors()
 
 def release_motors():
     value = False
@@ -95,10 +97,11 @@ def call_service(service,type,val):
 
 def main():
     c = Controller()
-    rospy.on_shutdown(release_motors)
+    #rospy.on_shutdown(release_motors)
     while not (rospy.is_shutdown()):
-        c.process()
-        break
+        c.automatic_movement()
+        if c.kill_therapy:
+            break
     rospy.loginfo("Controller Finished")
 
 if __name__ == '__main__':
