@@ -35,7 +35,7 @@ class Generacion_pulsos:
             self.msg.stamp = rospy.Time.now()
             self.sound_command_pub.publish(self.msg)
             pygame.mixer.music.play()
-            #sleep(0.5)
+            sleep(0.5)
             #server.stop()
             self.pulses += 1
         elif self.pulses > 56 and self.frec1 == True:
@@ -51,7 +51,7 @@ class Generacion_pulsos:
             self.msg.stamp = rospy.Time.now()
             self.sound_command_pub.publish(self.msg)
             pygame.mixer.music.play()
-            #sleep(0.5)
+            sleep(0.5)
             #server.stop()
             self.pulses += 1
         elif self.pulses > 80 and self.frec2 == True:
@@ -67,11 +67,11 @@ class Generacion_pulsos:
             self.msg.stamp = rospy.Time.now()
             self.sound_command_pub.publish(self.msg)
             pygame.mixer.music.play()
-            #sleep(0.5)
+            sleep(0.5)
             #server.stop()
-            #self.pulses += 1
+            self.pulses += 1
         elif self.pulses > 100 and self.frec3 == True:
-            self.inicio = False
+            #self.inicio = False
             self.kill_process = True  
 
     
