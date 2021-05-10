@@ -1,0 +1,9 @@
+	<!-- -*- mode: XML -*- -->
+<launch>
+  <arg name="time"/>
+  <rosparam file="$(find t_flex)/yaml/online_detection.yaml" />
+  <node pkg="mpu6050" name="mpu6050_node" type="mpu6050_node" output ='screen'/>
+  <node pkg="t_flex" name="imu_publisher" type="imu_publisher.py" output ='screen'/>
+  <node pkg="t_flex" name="real_time_gait_phase_det" type="real_time_gait_phase_det.py" output="screen"/>
+  <node pkg="t_flex" name="gait_assistance" type="gait_assistance.py" output='screen' args="-t $(arg time)"/>
+</launch>

@@ -1,3 +1,6 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+
 import rospy, rospkg
 import time
 from dynamixel_controllers.srv import SetSpeed, TorqueEnable, SetKGain

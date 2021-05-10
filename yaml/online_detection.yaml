@@ -1,4 +1,4 @@
 algorithm: "fov"     # Forward-only Viterbi algorithm
 # algorithm: "bvsw"      # Bounded variable sliding window approach
-patient: "felipe"
+patient: "healthy1"
 verbose: False
