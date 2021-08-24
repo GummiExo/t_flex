@@ -7,9 +7,9 @@ tilt1_controller:
     joint_speed: 10.0
     motor:
         id: 1
-        init: 2900 
-        min: 1800
-        max: 2900
+        init: 2100 
+        min: 2100
+        max: 3100
 tilt2_controller:
     controller:
         package: dynamixel_controllers
@@ -19,7 +19,7 @@ tilt2_controller:
     joint_speed: 10.0
     motor:
         id: 2
-        init: 2900
-        min: 1800
-        max: 2900
+        init: 1500
+        min: 1500
+        max: 2600
 

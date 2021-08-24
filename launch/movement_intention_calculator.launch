@@ -1,62 +1,62 @@
 <launch>
-    <node name="movement_intention_detector_emg_mean" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
+    <!-- node name="movement_intention_detector_emg_mean" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
         <rosparam>
             sensor: emg
             method: mean
         </rosparam>
-    </node >
-    <node name="movement_intention_detector_imu_mean" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
+    </node -->
+    <!-- node name="movement_intention_detector_imu_mean" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
         <rosparam>
             sensor: imu
             method: mean
         </rosparam>
-    </node >
+    </node -->
     <node name="movement_intention_detector_emg_std" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
         <rosparam>
             sensor: emg
             method: std
         </rosparam>
-    </node >
+    </node>
     <node name="movement_intention_detector_imu_std" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
         <rosparam>
             sensor: imu
             method: std
         </rosparam>
-    </node >
-    <node name="movement_intention_detector_emg_var" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
+    </node>
+    <!-- node name="movement_intention_detector_emg_var" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
         <rosparam>
             sensor: emg
             method: var
         </rosparam>
-    </node >
-    <node name="movement_intention_detector_imu_var" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
+    </node -->
+    <!-- node name="movement_intention_detector_imu_var" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
         <rosparam>
             sensor: imu
             method: var
         </rosparam>
-    </node >
-    <node name="movement_intention_detector_emg_mean_std" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
+    </node -->
+    <!-- node name="movement_intention_detector_emg_mean_std" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
         <rosparam>
             sensor: emg
             method: mean_std
         </rosparam>
-    </node >
-    <node name="movement_intention_detector_imu_mean_std" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
+    </node -->
+    <!-- node name="movement_intention_detector_imu_mean_std" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
         <rosparam>
             sensor: imu
             method: mean_std
         </rosparam>
-    </node >
-    <node name="movement_intention_detector_emg_mav" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
+    </node -->
+    <!-- node name="movement_intention_detector_emg_rms" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
         <rosparam>
             sensor: emg
-            method: mav
+            method: rms
         </rosparam>
-    </node >
-    <node name="movement_intention_detector_imu_mav" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
+    </node -->
+    <!-- node name="movement_intention_detector_imu_rms" pkg="t_flex" type="movement_intention_detector.py" required="true" output="screen">
         <rosparam>
             sensor: imu
-            method: mav
+            method: rms
         </rosparam>
-    </node >
+    </node -->
 </launch>
