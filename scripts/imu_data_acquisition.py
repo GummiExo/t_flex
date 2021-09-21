@@ -503,7 +503,7 @@ def main():
     sensor = IMU_BNO055(bus=bus, address=device_address,topic_name=topic_name)
     # Parameters of ROS message
     msg = IMUData()
-    rate = rospy.Rate(100)   # 100 Hz
+    rate = rospy.Rate(150)   # 150 Hz
     start_time = time.time()
 
     """Read IMU calibration status"""
