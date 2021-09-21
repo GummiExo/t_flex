@@ -1,16 +1,27 @@
 <!-- -*- mode: XML -*- -->
 
 <launch>
-    <!-- Start tilt joint controller -->
+    <!-- Start left tilt joint controller -->
     <rosparam file="$(find t_flex)/yaml/motors_parameters.yaml" command="load"/>
-    <node name="tilt_controller_spawner_frontal" pkg="dynamixel_controllers" type="controller_spawner.py"
-          args="--manager=tflex_motors
-                --port tflex_tilt_port
+    <node name="tilt_left_controller_spawner_frontal" pkg="dynamixel_controllers" type="controller_spawner.py"
+          args="--manager=tflex_left_motors
+                --port tflex_left_tilt_port
                 tilt1_controller"
                 output="screen"/>
-    <node name="tilt_controller_spawner_posterior" pkg="dynamixel_controllers" type="controller_spawner.py"
-          args="--manager=tflex_motors
-                --port tflex_tilt_port
+    <node name="tilt_left_controller_spawner_posterior" pkg="dynamixel_controllers" type="controller_spawner.py"
+          args="--manager=tflex_left_motors
+                --port tflex_left_tilt_port
                 tilt2_controller"
+                output="screen"/>
+    <!-- Start right tilt joint controller -->
+    <node name="tilt_right_controller_spawner_frontal" pkg="dynamixel_controllers" type="controller_spawner.py"
+          args="--manager=tflex_right_motors
+                --port tflex_right_tilt_port
+                tilt3_controller"
+                output="screen"/>
+    <node name="tilt_right_controller_spawner_posterior" pkg="dynamixel_controllers" type="controller_spawner.py"
+          args="--manager=tflex_right_motors
+                --port tflex_right_tilt_port
+                tilt4_controller"
                 output="screen"/>
 </launch>
