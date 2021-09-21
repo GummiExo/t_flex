@@ -42,11 +42,11 @@ def main():
     while not (rospy.is_shutdown()):
         for l.command in l.process():
             if l.command:
-                rospy.loginfo('Enabling Device')
+                rospy.loginfo('Assisting Dorsiflexion')
                 l.flag.publish(True)
             else:
-                rospy.loginfo('Disabling Device')
-                l.flag.publish(True)
+                rospy.loginfo('Assisting Plantarflexion')
+                l.flag.publish(False)
 
 
 if __name__ == '__main__':

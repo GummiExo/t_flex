@@ -20,7 +20,7 @@ class Calibracion(object):
         self.promedios = []
         self.umbral = 0
         self.mi_socket = socket.socket()
-        self.mi_socket.connect(("192.168.4.6", 3014))
+        self.mi_socket.connect(("192.168.4.9", 3014))
         #ROS Node Initialization
         rospy.init_node('movement_intention_imu', anonymous = True)
         self.pub = rospy.Publisher('movement_intention', Bool, queue_size = 1, latch = False)

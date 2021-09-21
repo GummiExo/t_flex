@@ -22,7 +22,7 @@ class IMU_BNO055:
     IMU 9DOF Sensor Fusion
     """
 
-    def __init__(self, bus = 1, address = 0x28, topic_name = '/imu_data'):
+    def __init__(self, bus = 3, address = 0x28, topic_name = '/imu_data'):
         self.bus = smbus.SMBus(bus)    # /dev/i2c-1
         self.address = address
         self.topic_name = topic_name
@@ -479,7 +479,7 @@ class IMU_BNO055:
 def main():
     # Get external parameters
     bus = 3
-    device_address = 0x28
+    device_address = 0x29
     topic_name = '/imu_data'
 
     try:
@@ -585,6 +585,7 @@ def main():
                 # Transmission of ROS message
                 msg.header.frame_id = "/" + sensor.node_name
                 msg.time_stamp = int(round((time.time() - start_time)*1000.0))
+                msg.header.stamp = rospy.Time.now()
                 msg.gyro_x = sensor.gyro['x']
                 # msg.gyro_y = sensor.gyro['y'][-1]
                 msg.gyro_y = sensor.gyro['y']

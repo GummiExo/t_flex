@@ -1,9 +1,9 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-import rospy, rospkg
+import rospy
 import time
-from dynamixel_controllers.srv import SetSpeed, TorqueEnable, SetKGain
+from dynamixel_controllers.srv import SetSpeed, TorqueEnable
 from std_msgs.msg import Bool, Float64
 import os
 import sys
@@ -11,18 +11,18 @@ import sys
 class TherapyController(object):
     def __init__(self):
         self.repeats, self.frecuency, self.speed = int(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3])
-        rospack = rospkg.RosPack()
-        package_directory = rospack.get_path('t_flex')
-        os.chdir(package_directory + '/yaml')
+        home = os.path.expanduser('~')
+        os.chdir(home + '/catkin_ws/src/t_flex/yaml')
         f = open("calibrationAngle.yaml", "r+")
         params = [f.readline().strip().split()[1] for i in range(4)]
+        print(params)
         rospy.init_node('t_flex_therapy', anonymous = True)
         self.ValueToPubUp1 = float(params[0])
         self.ValueToPubDown1 = float(params[1])
         self.ValueToPubUp2 = float(params[2])
         self.ValueToPubDown2 = float(params[3])
         set_motor_speed(self.speed)
-        rospy.Subscriber("/kill_therapy", Bool, self.updateFlagTherapy)
+        rospy.Subscriber("/t_flex/kill_therapy", Bool, self.updateFlagTherapy)
         self.frontal_motor_pub = rospy.Publisher("/tilt1_controller/command", Float64, queue_size = 1, latch = False)
         self.posterior_motor_pub = rospy.Publisher("/tilt2_controller/command", Float64, queue_size = 1, latch = False)
         self.kill_therapy = False

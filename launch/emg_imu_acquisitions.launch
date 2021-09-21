@@ -1,0 +1,8 @@
+	<!-- -*- mode: XML -*- -->
+<launch>
+  <arg name="time"/>
+  <node pkg="t_flex" name="imu_data_acquisition" type="imu_data_acquisition.py" output ='screen'/>
+  <node pkg="t_flex" name="emg_sensor_acquisition" type="emg_sensor_acquisition.py" output='screen'/>
+  <node pkg="t_flex" name="sound_commands" type="sound_commands.py" output='screen'/>
+
+</launch>

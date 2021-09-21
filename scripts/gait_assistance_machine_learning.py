@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import sys, getopt
-import rospy, rospkg
+import rospy
 import time
 from dynamixel_controllers.srv import SetSpeed, TorqueEnable
+from t_flex.msg import GaitPhase
 from std_msgs.msg import Bool, Float64, Int8
 import threading
 import logging
@@ -29,14 +30,13 @@ class Controller(object):
         self.flag = rospy.Subscriber("/kill_gait_assistance", Bool, self.updateFlagGaitAssistance)
         self.frontal_motor_pub = rospy.Publisher("/tilt1_controller/command", Float64, queue_size = 1, latch = False)
         self.posterior_motor_pub = rospy.Publisher("/tilt2_controller/command", Float64, queue_size = 1, latch = False)
-        rospy.Subscriber("/gait_phase", Int8, self.updateGaitEvent)
+        rospy.Subscriber("/gait_phase_detection", GaitPhase, self.updateGaitEvent)
         opts, args = getopt.getopt(sys.argv[1:], "t:", [])
         for opt, arg in opts:
             if opt == "-t":
                 self.time = int(arg)
-        rospack = rospkg.RosPack()
-        package_directory = rospack.get_path('t_flex')
-        os.chdir(package_directory + '/yaml')
+        home = os.path.expanduser('~')
+        os.chdir(home + '/catkin_ws/src/t_flex/yaml')
         f = open("calibrationAngle.yaml", "r+")
         params = [f.readline().strip().split()[1] for i in range(4)]
         self.ValueToPubUp1 = float(params[0])
@@ -55,8 +55,8 @@ class Controller(object):
     def updateFlagGaitAssistance(self,kill_signal):
         if kill_signal.data:
             rospy.logwarn("Killing gait assistance node due to external source")
-            release_motors()
-            #rospy.signal_shutdown("Node was killed by external source.")
+            #release_motors()
+            rospy.signal_shutdown("Node was killed by external source.")
 
     def flexion_movement(self):
         self.frontal_motor_pub.publish(self.ValueToPubUp1)
@@ -80,20 +80,19 @@ class Controller(object):
             kill_msg = Bool()
             kill_msg.data = True
             rospy.logwarn("Killing further nodes of gait assistance...")
-            #self.kill.publish(kill_msg)
+            self.kill.publish(kill_msg)
             rospy.signal_shutdown("Assistance time is up.")
         else:
             # Release motors if more than 1.5 seconds have passed between gait phases (No detection)
             if time.time() - self.start_time > 1.5:
                 #release_motors()
                 self.start_time = time.time()
-            if sensor.data != self.event:
+            if sensor.phase != self.event:
                 self.start_time = time.time()
-                self.event = sensor.data
+                self.event = sensor.phase
                 rospy.loginfo("Gait Phase: "+self.gait_phases[self.event])
                 ''' Heel Strike '''
-                if self.event == 1:
-		    #self.extension_movement()
+                if self.event == 0:
                     self.maximum_stiffness()
                     print("\nPublishing: " + self.gait_phases[self.event] + "\n")
                 ''' Heel Off '''

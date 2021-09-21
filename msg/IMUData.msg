@@ -1,6 +1,6 @@
 # Acquired IMU Data
 Header header
-int64 time_stamp
+float64 time_stamp
 float64 quat_x
 float64 quat_y
 float64 quat_z
@@ -11,4 +11,3 @@ float64 gyro_z
 float64 accel_x
 float64 accel_y
 float64 accel_z
-int64 angle
