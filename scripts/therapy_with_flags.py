@@ -19,8 +19,8 @@ class Controller(object):
         self.ValueToPubDown1 = float(params[1])
         self.ValueToPubUp2 = float(params[2])
         self.ValueToPubDown2 = float(params[3])
-        self.frecuency = 1.5
-        self.speed = 10
+        self.frecuency = 0.5
+        self.speed = 1
         set_motor_speed(self.speed)
         rospy.init_node('t_flex_therapy_with_flags', anonymous = True)
         rospy.Subscriber("/t_flex/kill_therapy", Bool, self.updateFlagTherapy)
@@ -52,20 +52,18 @@ class Controller(object):
             ''' Publisher Motor ID 1 and Motor ID 2'''
             self.frontal_motor_pub.publish(self.ValueToPubUp1)
             self.posterior_motor_pub.publish(self.ValueToPubDown2)
-            time.sleep(1/self.frecuency)
-            self.frontal_motor_pub.publish(self.ValueToPubDown1)
-            self.posterior_motor_pub.publish(self.ValueToPubUp2)
-            time.sleep(0.5)
-            self.enable = False
+                #time.sleep(1/self.frecuency)
+                #self.frontal_motor_pub.publish(self.ValueToPubDown1)
+                #self.posterior_motor_pub.publish(self.ValueToPubUp2)
                 #time.sleep(1/self.frecuency)
                 #self.disabled = False
-        #else:
-            #self.frontal_motor_pub.publish(self.ValueToPubDown1)
-            #self.posterior_motor_pub.publish(self.ValueToPubUp2)
-
+        else:
+            self.frontal_motor_pub.publish(self.ValueToPubDown1)
+            self.posterior_motor_pub.publish(self.ValueToPubUp2)
+                
                     #release_motors()
                     #self.disabled = True
-        #time.sleep(0.2)
+        time.sleep(0.5)
         #rospy.loginfo("------------------------ THERAPY FINISHED -----------------------")
 
     def process(self):

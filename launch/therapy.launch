@@ -1,0 +1,7 @@
+	<!-- -*- mode: XML -*- -->
+<launch>
+  <arg name="rep" default="0"/>
+  <arg name="freq" default="0.0"/>
+  <arg name="velocity" default="0.0"/>
+  <node pkg="t_flex" name="therapy" type="therapy.py" output ='screen' args="$(arg rep) $(arg freq) $(arg velocity)"/>
+</launch>

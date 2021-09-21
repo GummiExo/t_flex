@@ -7,7 +7,7 @@ from std_msgs.msg import Bool, Float64
 from dynamixel_msgs.msg import MotorStateList
 from dynamixel_controllers.srv import SetSpeed, TorqueEnable, SetKGain
 from t_flex.msg import IMUData
-import socket
+
 
 class MirrorTherapyController(object):
     def __init__(self):
@@ -51,14 +51,11 @@ class MirrorTherapyController(object):
         pid_service(id=1,p=35,i=40,d=0) #Frontal Motor
         time.sleep(0.1)
         pid_service(id=2,p=36,i=36,d=0) #Posterior Motor
-        ''' Socket Configuration '''
-        self.mi_socket = socket.socket()
-        self.mi_socket.connect(("192.168.4.8", 3014))
 
     def init_subscribers(self):
         rospy.Subscriber('/motor_states/tflex_tilt_port',MotorStateList, self.updateMotorsState)
-        rospy.Subscriber('/imu_data/paretic', IMUData, self.updatePareticIMU)
-        rospy.Subscriber('/imu_data/no_paretic', IMUData, self.updateNoPareticIMU)
+        rospy.Subscriber('/imu_data_paretic', IMUData, self.updatePareticIMU)
+        rospy.Subscriber('/imu_data_no_paretic', IMUData, self.updateNoPareticIMU)
         rospy.Subscriber('/kill_mirror_therapy', Bool, self.updateFlagTherapy)
 
     def init_publishers(self):
@@ -97,13 +94,13 @@ class MirrorTherapyController(object):
     def p_controller(self):
         angle_error = self.angle_no_paretic - self.angle_paretic
         #print("Angle error: " + str(angle_error))
-        angle_threshold = 3 #Degrees
+        angle_threshold = 1 #Degrees
         if self.isPareticIMUUpated and self.isNoPareticIMUUpated and self.isMotorAngleUpdated:
             current_state_m1 = self.position_to_radians(self.MotorStateFrontal.position, self.init_value_motor1)
             current_state_m2 = self.position_to_radians(self.MotorStatePosterior.position, self.init_value_motor2)
             control_signal = self.k_gain*abs(angle_error)
             #print("Current state m1 and m2: " + str(current_state_m1) + "\t" + str(current_state_m2))
-            if angle_error < -angle_threshold:
+            if angle_error > angle_threshold:
                 if self.init_value_motor1 == self.min_value_motor1:
                     m1 = current_state_m1 + control_signal
                 else:
@@ -112,7 +109,7 @@ class MirrorTherapyController(object):
                     m2 = current_state_m2 - control_signal
                 else:
                     m2 = current_state_m2 + control_signal
-            elif angle_error > angle_threshold:
+            elif angle_error < -angle_threshold:
                 if self.init_value_motor1 == self.min_value_motor1:
                     m1 = current_state_m1 - control_signal
                 else:
@@ -125,12 +122,10 @@ class MirrorTherapyController(object):
                 return
             #m1 = 2*numpy.tanh(m1) # Saturation function for the error
             #m2 = 2*numpy.tanh(m2) # Saturation function for the error
-            print("Value to pub m1 \t" + str(m1))
-            print("Value to pub m2 \t" + str(m2))
+            #print("Value to pub m1 \t" + str(m1))
+            #print("Value to pub m2 \t" + str(m2))
             self.frontal_motor_pub.publish(m1)
             self.posterior_motor_pub.publish(m2)
-            #TODO: Include socket command
-            self.mi_socket.send(str(self.angle_no_paretic).encode("ascii"))
             self.isPareticIMUUpated = False
             self.isNoPareticIMUUpated = False
             self.isMotorAngleUpdated = False
@@ -194,10 +189,10 @@ def main():
     rospy.loginfo("Starting Mirror Therapy")
     while not (rospy.is_shutdown()):
         c.p_controller()
-        #c.time_control()
-        #if c.kill_mirror_therapy:
-        #    break
-        #rate.sleep()
+        c.time_control()
+        if c.kill_mirror_therapy:
+            break
+        rate.sleep()
     rospy.loginfo("Controller Finished")
 
 if __name__ == '__main__':

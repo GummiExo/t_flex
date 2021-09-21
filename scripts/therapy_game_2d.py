@@ -1,3 +1,6 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+
 import rospy, rospkg
 import time
 from dynamixel_controllers.srv import SetSpeed, TorqueEnable, SetKGain
@@ -42,11 +45,11 @@ class TherapyController(object):
 
     def automatic_movement(self):
         ''' Publisher Motor ID 1 and Motor ID 2'''
-        self.frontal_motor_pub.publish(self.ValueToPubUp1)
-        self.posterior_motor_pub.publish(self.ValueToPubDown2)
+        self.frontal_motor_pub.publish(self.ValueToPubUp2)
+        self.posterior_motor_pub.publish(self.ValueToPubDown1)
         time.sleep(1/self.frequency)
-        self.frontal_motor_pub.publish(self.ValueToPubDown1)
-        self.posterior_motor_pub.publish(self.ValueToPubUp2)
+        self.frontal_motor_pub.publish(self.ValueToPubDown2)
+        self.posterior_motor_pub.publish(self.ValueToPubUp1)
         time.sleep(1/self.frequency)
 
     def process(self):

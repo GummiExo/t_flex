@@ -478,7 +478,7 @@ class IMU_BNO055:
 
 def main():
     # Get external parameters
-    bus = 1
+    bus = 3
     device_address = 0x29
     topic_name = '/imu_data'
 
@@ -559,7 +559,7 @@ def main():
                 # sys, gyro, accel, mag = sensor.read_calib()
                 # Other values you can optionally read:
                 # Orientation as a quaternion:
-                sensor.read_quat()
+                #sensor.read_quat()
                 # Sensor temperature in degrees Celsius:
                 #temp_c = sensor.read_temper()
                 # Magnetometer data (in micro-Teslas):
@@ -583,21 +583,21 @@ def main():
                 angle = sensor.euler['y'] - sensor.cal_angle
 
                 # Transmission of ROS message
-                msg.header.frame_id = "/" + sensor.node_name
+                #msg.header.frame_id = "/" + sensor.node_name
                 msg.time_stamp = int(round((time.time() - start_time)*1000.0))
                 msg.header.stamp = rospy.Time.now()
                 msg.gyro_x = sensor.gyro['x']
                 # msg.gyro_y = sensor.gyro['y'][-1]
                 msg.gyro_y = sensor.gyro['y']
-                msg.gyro_z = sensor.gyro['z']
+                #msg.gyro_z = sensor.gyro['z']
                 msg.accel_x = sensor.accel['x']
                 # msg.accel_y = sensor.accel['y'][-1]
                 msg.accel_y = sensor.accel['y']
-                msg.accel_z = sensor.accel['z']
-                msg.quat_x = sensor.quat['x']
-                msg.quat_y = sensor.quat['y']
-                msg.quat_z = sensor.quat['z']
-                msg.quat_w = sensor.quat['w']
+                #msg.accel_z = sensor.accel['z']
+                #msg.quat_x = sensor.quat['x']
+                #msg.quat_y = sensor.quat['y']
+                #msg.quat_z = sensor.quat['z']
+                #msg.quat_w = sensor.quat['w']
                 msg.angle = angle
                 sensor.pub.publish(msg)
             except:

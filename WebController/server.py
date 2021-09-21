@@ -11,7 +11,7 @@ class Server(object):
 	def __init__(self):
 		''' Topics Name '''
 		self.motor_state_topic_frontal = '/motor_states/frontal_tilt_port'
-		self.motor_state_topic_posterior = '/motor_states/frontal_tilt_port'
+		self.motor_state_topic_posterior = '/motor_states/posterior_tilt_port'
 		self.frontal_command_topic = '/tilt1_controller/command'
 		self.posterior_command_topic = '/tilt2_controller/command'
 		self.flag_angle_calibration = '/t_flex/kill_angle_calibration'

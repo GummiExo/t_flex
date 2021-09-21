@@ -1,5 +1,4 @@
 <!-- -*- mode: XML -*- -->
-
 <launch>
     <!-- Start tilt joint controller -->
     <rosparam file="$(find t_flex)/yaml/motors_parameters.yaml" command="load"/>
