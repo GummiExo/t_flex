@@ -7,7 +7,7 @@ from std_msgs.msg import Bool, Float64
 from dynamixel_msgs.msg import MotorStateList
 from dynamixel_controllers.srv import SetSpeed, TorqueEnable, SetKGain
 from t_flex.msg import IMUData
-
+import socket
 
 class MirrorTherapyController(object):
     def __init__(self):
@@ -51,6 +51,9 @@ class MirrorTherapyController(object):
         pid_service(id=1,p=35,i=40,d=0) #Frontal Motor
         time.sleep(0.1)
         pid_service(id=2,p=36,i=36,d=0) #Posterior Motor
+        ''' Socket Configuration '''
+        self.mi_socket = socket.socket()
+        self.mi_socket.connect(("192.168.4.8", 3014))
 
     def init_subscribers(self):
         rospy.Subscriber('/motor_states/tflex_tilt_port',MotorStateList, self.updateMotorsState)
@@ -127,6 +130,7 @@ class MirrorTherapyController(object):
             self.frontal_motor_pub.publish(m1)
             self.posterior_motor_pub.publish(m2)
             #TODO: Include socket command
+            self.mi_socket.send(str(self.angle_no_paretic).encode("ascii"))
             self.isPareticIMUUpated = False
             self.isNoPareticIMUUpated = False
             self.isMotorAngleUpdated = False
@@ -190,10 +194,10 @@ def main():
     rospy.loginfo("Starting Mirror Therapy")
     while not (rospy.is_shutdown()):
         c.p_controller()
-        c.time_control()
-        if c.kill_mirror_therapy:
-            break
-        rate.sleep()
+        #c.time_control()
+        #if c.kill_mirror_therapy:
+        #    break
+        #rate.sleep()
     rospy.loginfo("Controller Finished")
 
 if __name__ == '__main__':
