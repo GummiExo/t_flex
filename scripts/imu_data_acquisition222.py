@@ -478,8 +478,8 @@ class IMU_BNO055:
 
 def main():
     # Get external parameters
-    bus = 1
-    device_address = 0x29
+    bus = 3
+    device_address = 0x28
     topic_name = '/imu_data'
 
     try:

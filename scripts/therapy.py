@@ -3,7 +3,8 @@
 
 import rospy, rospkg
 import time
-from dynamixel_controllers.srv import SetSpeed, TorqueEnable, SetKGain
+#from dynamixel_controllers.srv import SetSpeed, TorqueEnable, SetKGain
+from dynamixel_controllers.srv import SetSpeed, TorqueEnable
 from std_msgs.msg import Bool, Float64
 import os
 import sys

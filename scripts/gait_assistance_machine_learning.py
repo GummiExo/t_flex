@@ -4,7 +4,7 @@
 import sys, getopt
 import rospy, rospkg
 import time
-from dynamixel_controllers.srv import SetSpeed, TorqueEnable
+from dynamixel_controllers.srv import SetSpeed, TorqueEnable, SetKGain
 from std_msgs.msg import Bool, Float64, Int8
 import threading
 import logging
@@ -29,6 +29,7 @@ class Controller(object):
         self.flag = rospy.Subscriber("/kill_gait_assistance", Bool, self.updateFlagGaitAssistance)
         self.frontal_motor_pub = rospy.Publisher("/tilt1_controller/command", Float64, queue_size = 1, latch = False)
         self.posterior_motor_pub = rospy.Publisher("/tilt2_controller/command", Float64, queue_size = 1, latch = False)
+        #rospy.Subscriber("/gait_phase", Float64, self.updateGaitEvent)
         rospy.Subscriber("/gait_phase", Int8, self.updateGaitEvent)
         opts, args = getopt.getopt(sys.argv[1:], "t:", [])
         for opt, arg in opts:
@@ -43,6 +44,7 @@ class Controller(object):
         self.ValueToPubDown1 = float(params[1])
         self.ValueToPubUp2 = float(params[2])
         self.ValueToPubDown2 = float(params[3])
+        home = os.path.expanduser('~')
         os.chdir(home + '/catkin_ws/src/t_flex/yaml')
         f = open("calibrationStiffness.yaml", "r+")
         params = [f.readline().strip().split()[1] for i in range(2)]
@@ -126,6 +128,38 @@ def set_motor_speed(speed):
     ans = call_service(service=service_frontal, type=type_service, val = value)
     ans = call_service(service=service_posterior, type=type_service, val = value)
 
+def set_pid_values(pretension_value):
+    if pretension_value == 5:
+        pid_service(id=1,p=30,i=25,d=0) #Frontal Motor
+        time.sleep(0.1)
+        pid_service(id=2,p=40,i=17,d=0) #Posterior Motor
+    elif pretension_value == 10:
+        pid_service(id=1,p=35,i=40,d=0) #Frontal Motor
+        time.sleep(0.1)
+        pid_service(id=2,p=36,i=36,d=0) #Posterior Motor
+    elif pretension_value == 20:
+        pid_service(id=1,p=32,i=55,d=0) #Frontal Motor
+        time.sleep(0.1)
+        pid_service(id=2,p=25,i=58,d=0) #Posterior Motor
+    else:
+        rospy.logerr("")
+
+def pid_service(id,p,i,d):
+    ''' PID services '''
+    p_service = 'tilt' + str(id) + '_controller/set_p_gain'
+    i_service = 'tilt' + str(id) + '_controller/set_i_gain'
+    d_service = 'tilt' + str(id) + '_controller/set_d_gain'
+    ans = call_service(service=p_service, type=SetKGain, val = p)
+    time.sleep(0.05)
+    ans1 = call_service(service=i_service, type=SetKGain, val = i)
+    time.sleep(0.05)
+    ans2 = call_service(service=d_service, type=SetKGain, val = d)
+    time.sleep(0.05)
+    if ans and ans1 and ans2:
+        rospy.loginfo("Successfull Gains Set (P: " + str(p) + " I: " + str(i) + " D: " + str(d))
+    else:
+        rospy.logerr("Gains set are not complete")
+
 def call_service(service,type,val):
     rospy.wait_for_service(service)
     try:
@@ -138,6 +172,8 @@ def call_service(service,type,val):
 
 def main():
     c = Controller()
+    pretension_value = 10 #N
+    set_pid_values(pretension_value)
     rospy.on_shutdown(release_motors)
     rospy.spin()
     rospy.loginfo("----------------------- ASSISTANT FINISHED ----------------------")

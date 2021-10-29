@@ -33,7 +33,8 @@ class Controller(object):
         self.flag = rospy.Subscriber("/kill_gait_assistance", Bool, self.updateFlagGaitAssistance)
         self.frontal_motor_pub = rospy.Publisher("/tilt1_controller/command", Float64, queue_size = 1, latch = False)
         self.posterior_motor_pub = rospy.Publisher("/tilt2_controller/command", Float64, queue_size = 1, latch = False)
-        rospy.Subscriber("/gait_phase_detection", GaitPhase, self.updateGaitEvent)
+        #rospy.Subscriber("/gait_phase_detection", GaitPhase, self.updateGaitEvent)
+        rospy.Subscriber("/gait_phase_actuated_limb", GaitPhase, self.updateGaitEvent)
         opts, args = getopt.getopt(sys.argv[1:], "t:", [])
         for opt, arg in opts:
             if opt == "-t":
