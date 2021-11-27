@@ -1,5 +1,6 @@
-#include <stdint.h>
 #include "t_flex/gait_cycle_classifier.hpp"
+
+#include <stdint.h>
 
 using namespace std;
 
@@ -9,15 +10,9 @@ Gait_cycle_classifier::Gait_cycle_classifier()
 	initialize_FSM(gait_cycle_states);
 	current_state = gait_cycle_states[0];
 
-	// Initialize the feature extractors for accelerometer-y and gyroscope-y with their parameters
-	// accel_y = new Feature_extractor(11000, -7000, 1000, -2000,
-	accel_y = new Feature_extractor(20000, -7000, 1000, -2000,
-									99999, -99999, 99999, 99999,
-									3500, -2500, 150);
-	// gyro_y = new Feature_extractor(4000, -1000, 99999, -99999,
-	gyro_y = new Feature_extractor(8000, -1000, 99999, -99999,
-								   5500, -1500, 25, 150,
-								   -99999, 99999, 99999);
+	//initialize the feature extractors for accelerometer-y and gyroscope-y with their parameters
+	accel_y = new Feature_extractor(11000, -7000, 1000, -2000, 99999, -99999, 99999, 99999, 3500, -2500, 150);
+	gyro_y = new Feature_extractor(4000, -1000, 99999, -99999, 5500, -1500, 25, 150, -99999, 99999, 99999);
 }
 
 Gait_cycle_classifier::~Gait_cycle_classifier()
@@ -133,12 +128,9 @@ void initialize_FSM(State states_array[])
 	};
 
 	//The features to look for in accel_y and gyro_y, and how old they can be to count (in ms)
-	// heel_strike.ay_criteria_for_state[0] = {NO_FEATURE, 150};
-	// heel_strike.gy_criteria_for_state[0] = {NEGATIVE_TROUGH, 150};
-	// heel_strike.gy_criteria_for_state[1] = {BREACHED_HIGH_THRESHOLD, 30};
-	heel_strike.ay_criteria_for_state[0] = {NO_FEATURE, 200};
-	heel_strike.gy_criteria_for_state[0] = {NEGATIVE_TROUGH, 200};
-	heel_strike.gy_criteria_for_state[1] = {BREACHED_HIGH_THRESHOLD, 50};
+	heel_strike.ay_criteria_for_state[0] = {NO_FEATURE, 150};
+	heel_strike.gy_criteria_for_state[0] = {NEGATIVE_TROUGH, 150};
+	heel_strike.gy_criteria_for_state[1] = {BREACHED_HIGH_THRESHOLD, 30};
 
 	//putting the state we just configured into the state array
 	states_array[0] = heel_strike;
@@ -156,12 +148,9 @@ void initialize_FSM(State states_array[])
 	};
 
 	//The features to look for in accel_y and gyro_y, and how old they can be to count (in ms)
-	// flat_foot.ay_criteria_for_state[0] = {NO_FEATURE, 150};
-	// flat_foot.gy_criteria_for_state[0] = {BREACHED_HIGH_THRESHOLD, 150};
-	// flat_foot.gy_criteria_for_state[1] = {POSITIVE_TROUGH, 30};
-	flat_foot.ay_criteria_for_state[0] = {NO_FEATURE, 200};
-	flat_foot.gy_criteria_for_state[0] = {BREACHED_HIGH_THRESHOLD, 200};
-	flat_foot.gy_criteria_for_state[1] = {POSITIVE_TROUGH, 50};
+	flat_foot.ay_criteria_for_state[0] = {NO_FEATURE, 150};
+	flat_foot.gy_criteria_for_state[0] = {BREACHED_HIGH_THRESHOLD, 150};
+	flat_foot.gy_criteria_for_state[1] = {POSITIVE_TROUGH, 30};
 
 	//putting the state we just configured into the state array
 	states_array[1] = flat_foot;
@@ -179,10 +168,8 @@ void initialize_FSM(State states_array[])
 	};
 
 	//The features to look for in accel_y and gyro_y, and how old they can be to count (in ms)
-	// mid_stance.ay_criteria_for_state[0] = {NEUTRAL, 30};
-	// mid_stance.gy_criteria_for_state[0] = {POSITIVE_TROUGH, 250};
-	mid_stance.ay_criteria_for_state[0] = {NEUTRAL, 80};
-	mid_stance.gy_criteria_for_state[0] = {POSITIVE_TROUGH, 400};
+	mid_stance.ay_criteria_for_state[0] = {NEUTRAL, 30};
+	mid_stance.gy_criteria_for_state[0] = {POSITIVE_TROUGH, 250};
 
 	//putting the state we just configured into the state array
 	states_array[2] = mid_stance;
@@ -200,10 +187,8 @@ void initialize_FSM(State states_array[])
 	};
 
 	//The features to look for in accel_y and gyro_y, and how old they can be to count (in ms)
-	// heel_off.ay_criteria_for_state[0] = {NEUTRAL, 150};
-	// heel_off.gy_criteria_for_state[0] = {BREACHED_HIGH_THRESHOLD, 30};
-	heel_off.ay_criteria_for_state[0] = {NEUTRAL, 200};
-	heel_off.gy_criteria_for_state[0] = {BREACHED_HIGH_THRESHOLD, 60};
+	heel_off.ay_criteria_for_state[0] = {NEUTRAL, 150};
+	heel_off.gy_criteria_for_state[0] = {BREACHED_HIGH_THRESHOLD, 30};
 
 	//putting the state we just configured into the state array
 	states_array[3] = heel_off;
@@ -221,12 +206,9 @@ void initialize_FSM(State states_array[])
 	};
 
 	//The features to look for in accel_y and gyro_y, and how old they can be to count (in ms)
-	// toe_off.ay_criteria_for_state[0] = {NO_FEATURE, 150};
-	// toe_off.gy_criteria_for_state[0] = {BREACHED_HIGH_THRESHOLD, 200};
-	// toe_off.gy_criteria_for_state[1] = {POSITIVE_TROUGH, 30};
-	toe_off.ay_criteria_for_state[0] = {NO_FEATURE, 180};
-	toe_off.gy_criteria_for_state[0] = {BREACHED_HIGH_THRESHOLD, 250};
-	toe_off.gy_criteria_for_state[1] = {POSITIVE_TROUGH, 50};
+	toe_off.ay_criteria_for_state[0] = {NO_FEATURE, 150};
+	toe_off.gy_criteria_for_state[0] = {BREACHED_HIGH_THRESHOLD, 200};
+	toe_off.gy_criteria_for_state[1] = {POSITIVE_TROUGH, 30};
 
 	//putting the state we just configured into the state array
 	states_array[4] = toe_off;
@@ -244,12 +226,9 @@ void initialize_FSM(State states_array[])
 	};
 
 	//The features to look for in accel_y and gyro_y, and how old they can be to count (in ms)
-	// mid_swing.ay_criteria_for_state[0] = {NO_FEATURE, 150};
-	// mid_swing.gy_criteria_for_state[0] = {BREACHED_LOW_THRESHOLD, 250};
-	// mid_swing.gy_criteria_for_state[1] = {NEGATIVE_TROUGH_MIDDLE, 30};
-	mid_swing.ay_criteria_for_state[0] = {NO_FEATURE, 200};
-	mid_swing.gy_criteria_for_state[0] = {BREACHED_LOW_THRESHOLD, 300};
-	mid_swing.gy_criteria_for_state[1] = {NEGATIVE_TROUGH_MIDDLE, 50};
+	mid_swing.ay_criteria_for_state[0] = {NO_FEATURE, 150};
+	mid_swing.gy_criteria_for_state[0] = {BREACHED_LOW_THRESHOLD, 250};
+	mid_swing.gy_criteria_for_state[1] = {NEGATIVE_TROUGH_MIDDLE, 30};
 
 	//putting the state we just configured into the state array
 	states_array[5] = mid_swing;

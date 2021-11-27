@@ -3,6 +3,7 @@
 
 #include "t_flex/feature_extractor.hpp"
 #include <string>
+#include <stdint.h>
 
 using namespace std;
 

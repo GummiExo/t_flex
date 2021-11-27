@@ -10,6 +10,7 @@ project(t_flex)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  roslib
   std_msgs
   message_generation
   dynamixel_controllers
@@ -44,8 +45,8 @@ generate_messages(
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES
-  CATKIN_DEPENDS roscpp rospy message_runtime
+  LIBRARIES t_flex
+  CATKIN_DEPENDS roscpp rospy message_runtime roslib
 #  DEPENDS system_lib
 )
 
@@ -75,19 +76,29 @@ target_link_libraries(gait_cycle_classifier
 )
 
 # Build main ROS node for threshold-based gait phase detection
-add_executable(gait_phases_threshold_node src/nodes/gait_phases_threshold_node.cpp)
-target_link_libraries(gait_phases_threshold_node
+#add_executable(gait_phases_threshold_node src/nodes/gait_phases_threshold_node.cpp)
+#target_link_libraries(gait_phases_threshold_node
+#  ${catkin_LIBRARIES}
+#  feature_extractor
+#  gait_cycle_classifier
+#)
+
+
+add_executable(threshold_detection_node src/nodes/threshold_detection_node.cpp)
+target_link_libraries(threshold_detection_node
   ${catkin_LIBRARIES}
   feature_extractor
   gait_cycle_classifier
 )
 
-add_executable(threshold_gait_detection_node src/nodes/threshold_gait_detection_node.cpp)
-target_link_libraries(threshold_gait_detection_node
+# Build main ROS node for offline threshold-based gait phase detection
+add_executable(offline_threshold_detection_node src/nodes/offline_threshold_detection_node.cpp)
+target_link_libraries(offline_threshold_detection_node
   ${catkin_LIBRARIES}
   feature_extractor
   gait_cycle_classifier
 )
+
 
 #############
 ## Install ##
@@ -95,7 +106,7 @@ target_link_libraries(threshold_gait_detection_node
 
 ## Mark executables and/or libraries for installation
 
-install(TARGETS feature_extractor gait_cycle_classifier gait_phases_threshold_node
+install(TARGETS feature_extractor gait_cycle_classifier threshold_detection_node offline_threshold_detection_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

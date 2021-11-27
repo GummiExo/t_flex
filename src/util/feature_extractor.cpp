@@ -1,4 +1,5 @@
 #include "t_flex/feature_extractor.hpp"
+
 #include <iostream>
 #include <stdint.h>
 
@@ -59,7 +60,6 @@ Feature_extractor::Feature_extractor(int high_threshold_, int low_threshold_, in
 	high_threshold = high_threshold_;
 	low_threshold = low_threshold_;
 	high_threshold_breach_time = 0;
-	high_threshold_breach_time = 0;
 	low_threshold_breach_time = 0;
 	disable_high_threshold_breach_until = 0;
 	disable_low_threshold_breach_until = 0;
@@ -105,13 +105,10 @@ bool Feature_extractor::intake_data(int datapoint, unsigned int time)
 	//used to track if any new features are recognized
 	bool feature_created = false;
 
-	//used to prevent the feature from being triggered
-	int prevent_time = 150;
 	//check if the data has breached the upper threshold
 	if(latest_data_entry > high_threshold && latest_data_time >= disable_high_threshold_breach_until){
 		//prevent this from being triggered for 150ms
-		// disable_high_threshold_breach_until = latest_data_time + 150;
-		disable_high_threshold_breach_until = latest_data_time + prevent_time;
+		disable_high_threshold_breach_until = latest_data_time + 150;
 
 		//Create the feature, set its type and time, and push into the feature container
 		Feature *recent_spike = new Feature();
@@ -125,8 +122,7 @@ bool Feature_extractor::intake_data(int datapoint, unsigned int time)
 	//check if the data has breached the lower threshold
 	else if(latest_data_entry < low_threshold && latest_data_time >= disable_low_threshold_breach_until){
 		//prevent this from being triggered for 150ms
-		// disable_low_threshold_breach_until = latest_data_time + 150;
-		disable_low_threshold_breach_until = latest_data_time + prevent_time;
+		disable_low_threshold_breach_until = latest_data_time + 150;
 
 		//Create the feature, set its type and time, and push into the feature container
 		Feature *recent_spike = new Feature();
@@ -140,8 +136,7 @@ bool Feature_extractor::intake_data(int datapoint, unsigned int time)
 	//check if the data has breached the upper threshold for slope
 	else if(slope_from_last_entry > slope_high_threshold && latest_data_time >= disable_slope_high_threshold_breach_until){
 		//prevent this from being triggered for 150ms
-		// disable_slope_high_threshold_breach_until = latest_data_time + 150;
-		disable_slope_high_threshold_breach_until = latest_data_time + prevent_time;
+		disable_slope_high_threshold_breach_until = latest_data_time + 150;
 
 		//Create the feature, set its type and time, and push into the feature container
 		Feature *recent_spike = new Feature();
@@ -155,8 +150,7 @@ bool Feature_extractor::intake_data(int datapoint, unsigned int time)
 	//check if the data has breached the upper threshold for slope
 	else if(slope_from_last_entry < slope_low_threshold && latest_data_time >= disable_slope_low_threshold_breach_until){
 		//prevent this from being triggered for 150ms
-		// disable_slope_low_threshold_breach_until = latest_data_time + 150;
-		disable_slope_low_threshold_breach_until = latest_data_time + prevent_time;
+		disable_slope_low_threshold_breach_until = latest_data_time + 150;
 
 		//Create the feature, set its type and time, and push into the feature container
 		Feature *recent_spike = new Feature();
